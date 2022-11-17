@@ -1,5 +1,6 @@
-import dotenv from "dotenv";
 import express from "express";
+import fs from "fs";
+import path from "path";
 import axios from "axios";
 import { GraphQLClient } from "graphql-request";
 import { environments } from "./environments";
@@ -15,9 +16,14 @@ const client = new GraphQLClient(environments.GRAPHQL_BACKEND_URI, {
     "Access-Control-Allow-Origin": "*",
   },
 });
+let errors: number[] = [];
+const dd: any[] = []
+let coursesToDownload: any[] = []
 
-server.get("/certificates/:clientId", async (req, res) => {
-  const { clientId } = req.params;
+const clientId = "universidadchinoin";
+let index = 0;
+
+const downloadCertificates = async () => {
   const { user_course_cl } = await client.request(
     GET_APPROVED_USERS_BY_CLIENTID,
     {
@@ -47,20 +53,94 @@ server.get("/certificates/:clientId", async (req, res) => {
   });
 
   console.log({ l: mkApproved.length, l2: response.length, l3: dc3.length });
-  const params = new URLSearchParams({
-    clientId,
-    userName: "Diego Rojas",
-    courseName: "Welcome Lernit",
-  });
-  const { data } = await axios.get(
-    `${environments.CERT_SERVER_URL}/${environments.CERT_SERVER_ENDPOINT}?${params}`
-  );
-  const certUrl = `${environments.CERT_SERVER_URL}/${data}`;
-  console.log({ certUrl });
 
-  return res.status(200).json({ dc3 });
+  const certsToDownload = [...response, ...mkApproved];
+  coursesToDownload = [...certsToDownload]
+  console.log(certsToDownload.length)
+  while (index <= certsToDownload.length - 1) {
+    try {
+      const c = certsToDownload[index];
+      const params = new URLSearchParams({
+        clientId,
+        userName: c.user?.full_name || "",
+        courseName: c.course?.name || "",
+      });
+      const { data } = await axios.get(
+        `${environments.CERT_SERVER_URL}/${environments.CERT_SERVER_ENDPOINT}?${params}`
+      );
+      const certUrl = `${environments.CERT_SERVER_URL}/${data}`;
+
+      const response = await axios.get(certUrl, {
+        responseType: "arraybuffer",
+      });
+      const dir = path.resolve(__dirname, "../certificatesChinoin");
+      const filename = `/${c.user.full_name.replace(
+        " ",
+        "-"
+      )}-${c.course.name.replace(" ", "-")}`;
+      fs.writeFile(dir + filename, response.data, () => {
+        console.log("Download finished : " + index);
+        index++;
+      });
+    } catch (err) {
+      errors.push(index);
+      console.log("Error at : " + index);
+      index++;
+    }
+  }
+};
+
+const downloadCertsErrors = async (data: any[]) => {
+  const errorsFile = path.resolve(__dirname, "../src") + '/errors.json'
+  fs.readFile(errorsFile, 'utf-8', (err, data) => {
+    if (err) {
+      console.log({ err })
+    } else {
+      errors = JSON.parse(data)
+    }
+  })
+  index = 0;
+  while (index <= data.length - 1) {
+    const c = coursesToDownload[errors[index]];
+    const params = new URLSearchParams({
+      clientId,
+      userName: c.user?.full_name || "",
+      courseName: c.course?.name || "",
+    });
+    const { data } = await axios.get(
+      `${environments.CERT_SERVER_URL}/${environments.CERT_SERVER_ENDPOINT}?${params}`
+    );
+    const certUrl = `${environments.CERT_SERVER_URL}/${data}`;
+
+    const response = await axios.get(certUrl, {
+      responseType: "arraybuffer",
+    });
+    const dir = path.resolve(__dirname, "../certificates/certificates1/");
+    const filename = `${c.user.full_name.replace(
+      " ",
+      "-"
+    )}-${c.course.name.replace(" ", "-")}`;
+    fs.writeFile(dir + filename, response.data, () => {
+      console.log("Download finished" + index);
+      index++;
+    });
+  }
+};
+
+downloadCertificates().then(() => {
+  console.log({ errors });
+  const dir = path.resolve(__dirname, "../src");
+  const filename = '/errors.json'
+  fs.writeFile(dir + filename, JSON.stringify(errors), 'utf-8', () => {
+    console.log('Json wrote')
+    downloadCertsErrors(errors);
+  })
 });
 
-server.listen(environments.PORT, () => {
-  console.log(`Serve ready on port ${environments.PORT}`);
-});
+// const example = [1, 2, 3, 5, 6, 7, 8, 3, 5, 1, 2, 8, 6, 22, 12, 33]
+// const dir = path.resolve(__dirname, "../src/");
+// console.log(dir)
+// const filename = '/errors.json'
+// fs.writeFile(dir + filename, JSON.stringify(example), 'utf-8', () => {
+//   console.log('example wrote')
+// })
