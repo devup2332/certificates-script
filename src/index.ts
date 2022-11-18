@@ -1,5 +1,6 @@
 import express from "express";
-import fs from "fs";
+import stream from "stream";
+import fs, { createWriteStream } from "fs-extra";
 import path from "path";
 import moment from "moment";
 import subDays from "date-fns/subDays";
@@ -83,7 +84,7 @@ const downloadCertificates = async () => {
       const filename = `/${c.user.full_name.replace(
         " ",
         "-"
-      )}-${c.course.name.replace(" ", "-")}`;
+      )}-${c.course.name.replace(" ", "-")}.pdf`;
       fs.writeFile(dir + filename, response.data, () => {
         console.log("Download finished : " + index);
         index++;
@@ -95,6 +96,8 @@ const downloadCertificates = async () => {
     }
   }
 };
+
+// downloadCertificates()
 
 const sleep = (time: number) => {
   return new Promise((resolve, reject) => {
@@ -284,7 +287,7 @@ const downloadDC3Certificates = async () => {
       name: c.user.first_name,
       lastName: c.user.last_name,
       curp: c.user.curp,
-      shcp: c.user.business_name,
+      shcp: "PFA800109TG4",
       stps: stpsAgente,
       tematica: tematicaName?.description ?? c.course?.dc3_data_json?.tematica,
       razonSocial: "PRODUCTOS FARMACEUTICOS SA DE CV",
@@ -294,7 +297,7 @@ const downloadDC3Certificates = async () => {
           ? instructorName
           : c.course?.dc3_data_json?.stps,
       bossName: "MAGALLY SANCHEZ AGUILAR",
-      workersBossName: "MAGALLY SANCHEZ AGUILAR",
+      workersBossName: "ADRIANA BELLO DIAZ",
       logo: "universidadchinoin",
       ocupacion: ocupacionName?.description ?? c.user?.user_ou?.name,
       puesto: c.user.user_role.name,
@@ -306,13 +309,14 @@ const downloadDC3Certificates = async () => {
         : moment(c.last_update).format("YYYY-MM-DD"),
       finCurso: fechaFinCurso,
     };
+    console.log(requestData);
 
-    const response = await axios.get(dc3URL, {
+    const { data } = await axios.get<string>(dc3URL, {
       params: requestData,
-      responseType: "arraybuffer",
-      responseEncoding: "binary",
     });
-
+    const response = await axios.get(`https://server.lernit.app/${data}`, {
+      responseType: "arraybuffer",
+    });
     const dir = path.resolve(__dirname, "../dc3Certificates/");
     const filename = `/DC3-${c.user.full_name
       .trimStart()
@@ -320,12 +324,10 @@ const downloadDC3Certificates = async () => {
       .replace(/\s/g, "-")}-${c.course.name
         .trimStart()
         .trimEnd()
-        .replace(/\s/g, "-")}`;
-    console.log(dir + filename);
-    fs.writeFile(dir + filename, response.data, () => {
-      console.log(`DC3 Downloaded : ${index}`);
-      index++;
-    });
+        .replace(/\s/g, "-")}.pdf`;
+    await fs.writeFile(dir + filename, response.data);
+    console.log("End : " + index);
+    index++;
   }
 };
 
