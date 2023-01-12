@@ -11,9 +11,9 @@ export const GET_STPS_CATALOG = gql`
   }
 `;
 
-export const GET_APPROVED_USERS_BY_CLIENTID = gql`
-  query GET_APPROVED_USERS($clientId: String) {
-    user_course_cl(where: { user: { client_id: { _eq: $clientId } } }) {
+export const GET_USERS_COURSE = gql`
+  query GET_APPROVED_USERS($courseFb: String) {
+    user_course_cl(where: { course: { course_fb: { _eq: $courseFb } } }) {
       created_at
       last_update
       score
@@ -24,9 +24,21 @@ export const GET_APPROVED_USERS_BY_CLIENTID = gql`
         full_name
         client_id
         user_fb
+        client {
+          name
+        }
         first_name
         last_name
         curp
+        business_name {
+          shcp
+          name
+          boss_name
+          boss_name_workers
+          instructor {
+            full_name
+          }
+        }
         user_ou {
           name
         }
