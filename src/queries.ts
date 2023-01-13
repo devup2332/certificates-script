@@ -12,8 +12,13 @@ export const GET_STPS_CATALOG = gql`
 `;
 
 export const GET_USERS_COURSE = gql`
-  query GET_APPROVED_USERS($courseFb: String) {
-    user_course_cl(where: { course: { course_fb: { _eq: $courseFb } } }) {
+  query GET_USERS_COURSE($courseFb: String) {
+    user_course_cl(
+      where: {
+        course: { course_fb: { _eq: $courseFb } }
+        _and: { user: { client_id: { _eq: "solintegra" } } }
+      }
+    ) {
       created_at
       last_update
       score
@@ -52,6 +57,11 @@ export const GET_USERS_COURSE = gql`
         min_score
         min_progress
         name
+        modules {
+          id
+          name
+        }
+        instructors_data
         created_at
         created_by: created_by_json
         type

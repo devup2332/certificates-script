@@ -25,6 +25,7 @@ let errors: number[] = [];
 
 const clientId = "solintegra";
 let index = 0;
+export const LARGE_NAMED_DATE_FORMAT = `dd 'de' MMMM 'del' yyyy`;
 
 const downloadDC3Certificates = async () => {
   const { user_course_cl } = await client.request(GET_USERS_COURSE, {
@@ -129,8 +130,51 @@ const downloadDC3Certificates = async () => {
     index++;
   }
 };
-// downloadCertificates();
+// downloadDC3Certificates()
 
-const downloadCertificates = () => {
+const downloadCertificates = async () => {
+  console.log({ environments });
+  const { user_course_cl } = await client.request(GET_USERS_COURSE, {
+    courseFb: "VOmoAD13jn6kY6EDRtUc",
+  });
+  const users_approved = user_course_cl.filter((c: any) => {
+    const approved =
+      c.score >= c.course.min_score && c.progress >= c.course.min_progress;
+    if (c.completed_at && approved) return true;
+    return false;
+  });
+  console.log({
+    user_course_cl: user_course_cl.length,
+    approved: users_approved.length,
+  });
+  while (index < users_approved.length - 1) {
+    console.log("Start", index);
+    const { user, course, completed_at } = users_approved[index];
+    const params = {
+      name: user.full_name,
+      course: course.name,
+      date: moment(new Date(completed_at)).format("YYYY-MM-DD"),
+      duration: `${course.duration} hrs`,
+      modules: course.modules.length,
+    };
+    const searchParams = new URLSearchParams(params);
+    const { data } = await axios.get(
+      `${environments.CERT_SERVER_URL}/${environments.CERT_SERVER_ENDPOINT}?${searchParams}`
+    );
 
-}
+    const certificate = await axios.get(data, {
+      responseType: "arraybuffer",
+    });
+    const filename = `/Cert-${user.full_name
+      .trimStart()
+      .trimEnd()
+      .replace(/\s/g, "-")}-${course.name
+      .trimStart()
+      .trimEnd()
+      .replace(/\s/g, "-")
+      .replace(":", "")}.png`;
+    await fs.writeFile("certificates" + filename, certificate.data);
+    index++;
+  }
+};
+downloadCertificates();
