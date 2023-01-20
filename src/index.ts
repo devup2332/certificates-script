@@ -29,7 +29,7 @@ export const LARGE_NAMED_DATE_FORMAT = `dd 'de' MMMM 'del' yyyy`;
 
 const downloadDC3Certificates = async () => {
   const { user_course_cl } = await client.request(GET_USERS_COURSE, {
-    courseFb: "3A7TgfGxr3dU1fmdThQF",
+    clienId: "universidadchinoin",
   });
   const users_approved = user_course_cl.filter((c: any) => {
     const approved =
@@ -38,6 +38,12 @@ const downloadDC3Certificates = async () => {
     return false;
   });
 
+  const dc3Users = users_approved.filter((u: any) => {
+    const dc3Data = u.course?.dc3_data_json;
+    return dc3Data !== null && dc3Data !== undefined && dc3Data !== false;
+    // return u?.course?.dc3_data_json;
+  });
+  console.log({ dc3Users: dc3Users.length });
   const stpsTematica = await client.request(GET_STPS_CATALOG, {
     catalogId: "tematica",
   });
@@ -46,13 +52,14 @@ const downloadDC3Certificates = async () => {
     catalogId: "ocupaciones",
   });
 
-  while (index < users_approved.length - 1) {
+  while (index < dc3Users.length - 1) {
     console.log("Start : " + index);
     const { user, course, created_at, last_update, completed_at } =
       users_approved[index];
+    console.log({ item: users_approved[index] });
 
     const tematicaName = stpsTematica?.stps_catalog.find(
-      (t: any) => t.code === course.dc3_data_json.tematica
+      (t: any) => t.code === course.dc3_data_json?.tematica
     );
     const ocupacionName = stps_catalog?.find(
       (t: any) => t.code == user?.additional_info_json?.clave_ocupacion
@@ -64,8 +71,8 @@ const downloadDC3Certificates = async () => {
         course?.created_by?.lastName ?? ""
       }`;
     } else if (
-      course.dc3_data_json.instructorType &&
-      course.dc3_data_json.instructorType > 0 &&
+      course.dc3_data_json?.instructorType &&
+      course.dc3_data_json?.instructorType > 0 &&
       course.dc3_data_json?.stps &&
       course.dc3_data_json.stps !== ""
     ) {
@@ -77,26 +84,30 @@ const downloadDC3Certificates = async () => {
     }
 
     const instructorName =
-      user.business_name?.instructor?.full_name ??
+      user.business_name?.instructor?.full_name ||
       `${course?.created_by?.firstName ?? ""} ${
         course?.created_by?.lastName ?? ""
       }`;
 
     const fechaFinCurso = completed_at || last_update;
+    const [firstName] = user?.first_name.split(" ");
+    const [lastName] = user?.last_name.split(" ");
 
     const requestData = {
-      name: user?.first_name,
-      lastName: user?.last_name,
+      name: firstName,
+      lastName: lastName,
       curp: user?.curp,
       shcp: user?.business_name?.shcp,
       stps: stpsAgente,
-      tematica: tematicaName?.description ?? course?.dc3_data_json?.tematica,
+      tematica: tematicaName?.description || course?.dc3_data_json?.tematica,
       razonSocial: user?.business_name?.name,
       instructorName:
         course?.dc3_data_json?.instructorType &&
         course?.dc3_data_json?.instructorType > 0
           ? instructorName
-          : course?.dc3_data_json?.stps,
+          : course?.dc3_data_json?.stps
+          ? "Marcela Vazquez"
+          : "Marcela Vazquez",
       bossName: user?.business_name?.boss_name,
       workersBossName: user?.business_name?.boss_name_workers,
       logo: user?.client_id,
@@ -118,19 +129,21 @@ const downloadDC3Certificates = async () => {
       responseType: "arraybuffer",
     });
     const dir = path.resolve(__dirname, "../dc3Certificates/");
-    const filename = `/DC3-${user.full_name
+    const filename = `/${user.full_name
       .trimStart()
       .trimEnd()
       .replace(/\s/g, "-")}-${course.name
       .trimStart()
       .trimEnd()
+      .replace("|", "")
       .replace(/\s/g, "-")}.pdf`;
     await fs.writeFile(dir + filename, response.data);
     console.log("End : " + index);
     index++;
   }
+  console.log({ dc3Users: dc3Users.length });
 };
-// downloadDC3Certificates()
+downloadDC3Certificates();
 
 const downloadCertificates = async () => {
   console.log({ environments });
@@ -177,4 +190,4 @@ const downloadCertificates = async () => {
     index++;
   }
 };
-downloadCertificates();
+// downloadCertificates();

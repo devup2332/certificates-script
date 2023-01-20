@@ -12,13 +12,8 @@ export const GET_STPS_CATALOG = gql`
 `;
 
 export const GET_USERS_COURSE = gql`
-  query GET_USERS_COURSE($courseFb: String) {
-    user_course_cl(
-      where: {
-        course: { course_fb: { _eq: $courseFb } }
-        _and: { user: { client_id: { _eq: "solintegra" } } }
-      }
-    ) {
+  query GET_USERS_COURSE($clienId: String) {
+    user_course_cl(where: { user: { client_id: { _eq: $clienId } } }) {
       created_at
       last_update
       score
