@@ -8,4 +8,5 @@ export const environments = {
   PORT: process.env.PORT || "8000",
   CERT_SERVER_URL: process.env.CERT_SERVER_URL || "",
   CERT_SERVER_ENDPOINT: process.env.CERT_SERVER_ENDPOINT || "",
+  CERT_LWL_PDF: process.env.CERT_LWL_PDF || ''
 };

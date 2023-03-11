@@ -10,10 +10,11 @@ import { GraphQLClient } from "graphql-request";
 import { environments } from "./environments";
 import {
   GET_APPROVED_USERS_IN_MARKETPLACE,
+  GET_QUESTIONS_LESSON,
   GET_STPS_CATALOG,
-  GET_USERS_COURSE,
-  GET_USERS_COURSE_PER_COURSE,
+  GET_USERS_COURSE_PER_INSTANCE,
   GET_USER_COURSES,
+  GET_USER_COURSES_DC3_PER_INSTANCE,
   INSERT_USER_COURSE,
   INSERT_USER_LESSON,
 } from "./queries";
@@ -22,6 +23,14 @@ import {
   GET_COURSES_INSTANCE,
   GET_COURSE_INTANCE_MARKETPLACE,
 } from "./graphql/queries/getInfoCourses";
+import { GET_COMMENTS_FOR_ENTIRE_INSTANCE } from "./graphql/queries/comments";
+import { Lesson } from "./interfaces";
+import { DELETE_COMMENTS_FOR_AND_INSTANCE } from "./graphql/mutations/comments";
+import { GET_LEARNINGPATH_INFO } from "./graphql/queries/learningPaths";
+import { RESET_USER_COURSE_STATUS } from "./graphql/mutations/courses";
+import { format } from "date-fns";
+import { GET_ALL_FORUMS_AND_TASKS_INFO } from "./graphql/queries/lessons";
+import { UPDATE_USER_LESSONS } from "./graphql/mutations/lessons";
 const client = new GraphQLClient(environments.GRAPHQL_BACKEND_URI, {
   headers: {
     "x-hasura-admin-secret": environments.GRAPHQL_BACKEND_SECRET,
@@ -32,38 +41,26 @@ const client = new GraphQLClient(environments.GRAPHQL_BACKEND_URI, {
 const dc3URL = "https://server.lernit.app/certificadoDC3";
 let errors: number[] = [];
 
-const clientId = "solintegra";
+const clientId = "azelis";
 let index = 0;
 export const LARGE_NAMED_DATE_FORMAT = `dd 'de' MMMM 'del' yyyy`;
 
-const downloadDC3Certificates = async () => {
-  const courses = [
-    "3GgszneRj2qTBPVSN8tx",
-    "SIq3N7QBPKpGyCeiYZdw",
-    "pCeacexAw3QVaRIFmOKK",
-    "fGkEhVytGtu7BHxEz50o",
-    "TzXqcjxqAptTeLBYNaqY",
-    "0znYjFscupYylaw1tD1h",
-    "6sXxtF4ZThN51joulLFy",
-    "qfpl5sxqQ62BtJVWsCky",
-    "grYIciYrCW4UKeGrpYbm",
-  ];
+const downloadDC3CertificatesForAnInstance = async () => {
+  const clientId = "azelis";
   const certs: any[] = [];
-  const { user_course_cl } = await client.request(GET_USERS_COURSE_PER_COURSE, {
-    coursesFb: courses,
-  });
-  const users_approved = user_course_cl.filter((c: any) => {
+  const { user_course_cl } = await client.request(
+    GET_USER_COURSES_DC3_PER_INSTANCE,
+    {
+      clientId,
+    }
+  );
+  const approvedUsers = user_course_cl.filter((c: any) => {
     const approved =
       c.score >= c.course.min_score && c.progress >= c.course.min_progress;
     if (c.completed_at && approved) return true;
     return false;
   });
 
-  const dc3Users = users_approved.filter((u: any) => {
-    const dc3Data = u.course?.dc3_data_json;
-    return dc3Data !== null && dc3Data !== undefined && dc3Data !== false;
-  });
-  console.log({ dc3Users: dc3Users.length, certs });
   const stpsTematica = await client.request(GET_STPS_CATALOG, {
     catalogId: "tematica",
   });
@@ -72,11 +69,16 @@ const downloadDC3Certificates = async () => {
     catalogId: "ocupaciones",
   });
 
-  while (index < dc3Users.length - 1) {
+  console.log({
+    approvedUsers: approvedUsers.length,
+    user_course_cl: user_course_cl.length,
+  });
+  while (index < approvedUsers.length) {
     console.log("Start : " + index);
     const { user, course, created_at, last_update, completed_at } =
-      users_approved[index];
+      approvedUsers[index];
 
+    console.log({ dc3: course.dc3_data_json });
     const tematicaName = stpsTematica?.stps_catalog.find(
       (t: any) => t.code === course.dc3_data_json?.tematica
     );
@@ -126,7 +128,9 @@ const downloadDC3Certificates = async () => {
         course?.dc3_data_json?.instructorType &&
         course?.dc3_data_json?.instructorType > 0
           ? instructorName
-          : course?.dc3_data_json?.stps,
+          : course?.dc3_data_json?.stps
+          ? course?.dc3_data_json.stps
+          : course.instructors_data[0].firstName,
       bossName: user?.business_name?.boss_name,
       workersBossName: user?.business_name?.boss_name_workers,
       logo: user?.client_id,
@@ -140,7 +144,6 @@ const downloadDC3Certificates = async () => {
         : moment(last_update).format("YYYY-MM-DD"),
       finCurso: fechaFinCurso,
     };
-    console.log({ requestData });
 
     const { data } = await axios.get<string>(dc3URL, {
       params: requestData,
@@ -148,7 +151,7 @@ const downloadDC3Certificates = async () => {
     const response = await axios.get(`https://server.lernit.app/${data}`, {
       responseType: "arraybuffer",
     });
-    const dir = path.resolve(__dirname, "../certificates/");
+    const dir = path.resolve(__dirname, "../DC3Certificates/");
     const filename = `/${user.full_name
       .trimStart()
       .trimEnd()
@@ -158,11 +161,11 @@ const downloadDC3Certificates = async () => {
       .replace("|", "")
       .replace(/\s/g, "-")}.pdf`;
     await fs.writeFile(dir + filename, response.data);
+    console.log("Ended", index);
     index++;
   }
-  console.log({ dc3Users: dc3Users.length });
 };
-downloadDC3Certificates();
+// downloadDC3CertificatesForAnInstance();
 
 const generateExcel = async () => {
   const { courses_cl } = await client.request(GET_COURSES_INSTANCE, {
@@ -203,57 +206,54 @@ const generateExcel = async () => {
 };
 // generateExcel();
 
-const downloadCertificates = async () => {
-  const courses = [
-    "3GgszneRj2qTBPVSN8tx",
-    "SIq3N7QBPKpGyCeiYZdw",
-    "pCeacexAw3QVaRIFmOKK",
-    "fGkEhVytGtu7BHxEz50o",
-    "TzXqcjxqAptTeLBYNaqY",
-    "0znYjFscupYylaw1tD1h",
-    "6sXxtF4ZThN51joulLFy",
-    "qfpl5sxqQ62BtJVWsCky",
-    "grYIciYrCW4UKeGrpYbm",
-  ];
-  const { user_course_cl: users1 } = await client.request(
-    GET_USERS_COURSE_PER_COURSE,
-    { courseFb: courses[0] }
+const downloadCertificatesPerInstance = async () => {
+  const { user_course_cl } = await client.request(
+    GET_USERS_COURSE_PER_INSTANCE,
+    { clientId: "azelis" }
   );
-  const { user_course_cl: users2 } = await client.request(
-    GET_USERS_COURSE_PER_COURSE,
-    { courseFb: courses[1] }
-  );
-  const { user_course_cl: users3 } = await client.request(
-    GET_USERS_COURSE_PER_COURSE,
-    { courseFb: courses[2] }
-  );
-  const users = [...users1, ...users2, ...users3];
-  console.log({ users: users.length });
-  const users_approved = users.filter((c: any) => {
+  const usersApproved = user_course_cl.filter((c: any) => {
     const approved =
       c.score >= c.course.min_score && c.progress >= c.course.min_progress;
     if (c.completed_at && approved) return true;
     return false;
   });
-  console.log({ length: users.length, approved: users_approved.length });
-  while (index < users_approved.length - 1) {
+  console.log({ approved: usersApproved.length });
+  while (index < usersApproved.length) {
     console.log("Start", index);
-    const { user, course, completed_at } = users_approved[index];
-    const params = {
-      clientId: "universidadexecon",
-      userName: user.full_name,
-      courseName: course.name,
-      date: moment(new Date(completed_at)).format("YYYY-MM-DD"),
-      duration: `${course.duration} hrs`,
-    };
-    const searchParams = new URLSearchParams(params);
-    const { data } = await axios.get(
-      `${environments.CERT_SERVER_URL}/${environments.CERT_SERVER_ENDPOINT}?${searchParams}`
-    );
-    console.log({ data });
-
+    const { user, course, completed_at } = usersApproved[index];
+    let response;
+    if (course.client_id === "content") {
+      console.log("Content");
+      const params = {
+        name: user.full_name,
+        course: course.name,
+        date: format(new Date(completed_at), "dd MM yyyy"),
+        ucid: user.user_fb,
+        duration: course.duration + " hrs",
+        modules: course.modules.length,
+      };
+      const searchParams = new URLSearchParams(params);
+      const { data } = await axios.get(
+        `${environments.CERT_SERVER_URL}/${environments.CERT_LWL_PDF}?${searchParams}`
+      );
+      response = data;
+    } else {
+      console.log("Normal");
+      const params = {
+        clientId,
+        userName: user.full_name,
+        courseName: course.name,
+        date: moment(new Date(completed_at)).format("YYYY-MM-DD"),
+        duration: `${course.duration} hrs`,
+      };
+      const searchParams = new URLSearchParams(params);
+      const { data } = await axios.get(
+        `${environments.CERT_SERVER_URL}/${environments.CERT_SERVER_ENDPOINT}?${searchParams}`
+      );
+      response = data;
+    }
     const certificate = await axios.get(
-      `${environments.CERT_SERVER_URL}/${data}`,
+      `${environments.CERT_SERVER_URL}/${response}`,
       {
         responseType: "arraybuffer",
       }
@@ -266,11 +266,16 @@ const downloadCertificates = async () => {
       .trimEnd()
       .replace(/\s/g, "-")
       .replace(":", "")}.pdf`;
-    await fs.writeFile("certificates" + filename, certificate.data);
+    await fs.writeFile(
+      course.client_id === "content"
+        ? "certsMarketplace" + filename
+        : "certificates" + filename,
+      certificate.data
+    );
     index++;
   }
 };
-// downloadCertificates();
+// downloadCertificatesPerInstance();
 
 const syncUsers = async () => {
   const { user_course_cl: coursesToMigrate } = await client.request(
@@ -310,3 +315,106 @@ const syncUsers = async () => {
 };
 
 // syncUsers();
+
+const syncQuestionsForOneLesson = async () => {
+  const { lessons_cl } = await client.request(GET_QUESTIONS_LESSON, {
+    lessonFb: "xQiUxJYE2BPuFGtc7rtL",
+  });
+  const users = lessons_cl[0].users;
+  const payload: any[] = [];
+  users.forEach((item: any) => {
+    const { summary, user } = item;
+
+    if (!summary) return;
+    const summ = summary
+      .map((opt: any) => {
+        // console.log({ opt });
+        if (
+          opt.id === "Z52Ip6jH3v2YS570NUQv" ||
+          opt.id === "LeXnFKLFMJagxUDcUnc2"
+        ) {
+          const id = opt.id === "Z52Ip6jH3v2YS570NUQv" ? 96416 : 97599;
+          // console.log({ id: opt.id });
+          return { ...opt, id };
+        }
+      })
+      .filter((i: any) => i !== undefined);
+    if (summ.length === 0) return;
+    const lesson = {
+      ...item,
+    };
+    lesson.summary = summ;
+    lesson["user_fb"] = user.user_fb;
+    delete lesson.user;
+    payload.push(lesson);
+  });
+  const response = await client.request(INSERT_USER_LESSON, {
+    input: payload,
+  });
+  console.log({ response });
+};
+
+// syncQuestionsForOneLesson();
+
+const deleteCommentsForEnireInstance = async () => {
+  const { lessons_cl } = await client.request<
+    Promise<{ lessons_cl: Lesson[] }>
+  >(GET_COMMENTS_FOR_ENTIRE_INSTANCE, {
+    clientId: "uconstrurama",
+  });
+  const commentsToDelete: string[] = [];
+  const lessonsHaveComments: any[] = [];
+  lessons_cl.forEach((l) => {
+    if (l.comments.length > 0) {
+      lessonsHaveComments.push(l);
+      l.comments.forEach((c: any) => commentsToDelete.push(c.comment_fb));
+    }
+  });
+  console.log({
+    commentsToDelete: commentsToDelete.length,
+    lessonsHaveComments: lessonsHaveComments.length,
+  });
+
+  const response = await client.request(DELETE_COMMENTS_FOR_AND_INSTANCE, {
+    commentsFb: commentsToDelete,
+  });
+  console.log({ response });
+};
+// deleteCommentsForEnireInstance();
+
+const deleteProgressLpsInstancePerCourse = async () => {
+  const { learning_paths_cl } = await client.request(GET_LEARNINGPATH_INFO, {
+    learningpathFb: "XI10yxTYDLYQn0IxsW2A",
+  });
+  const { users_json, courses_json } = learning_paths_cl[0];
+
+  const response = await client.request(RESET_USER_COURSE_STATUS, {
+    usersId: users_json,
+    coursesId: courses_json.map((c: any) => c.id),
+  });
+  console.log({ users_json });
+  console.log({ response });
+};
+
+// deleteProgressLpsInstancePerCourse();
+
+const assign100AllForumsAndTasksUsers = async () => {
+  const { users_lessons_cl } = await client.request(
+    GET_ALL_FORUMS_AND_TASKS_INFO
+  );
+  console.log({ users_lessons_cl });
+  const usersId = users_lessons_cl
+    .filter((uc: any) => uc.score !== 100)
+    .map((uc: any) => uc.user?.user_fb)
+    .filter((id?: string) => id);
+
+  console.log({ usersId: usersId.length });
+  const lessonsId = users_lessons_cl.map((uc: any) => uc.lesson.lesson_fb);
+  // const response = await client.request(UPDATE_USER_LESSONS, {
+  //   usersId,
+  //   lessonsId,
+  // });
+  // console.log({ response });
+};
+
+assign100AllForumsAndTasksUsers();

@@ -4,3 +4,7 @@ build
 certificates
 certificatesChinoin
 dc3Certificates
+certsMarketplace
+certificates.zip
+*xlsx
+*.zip
