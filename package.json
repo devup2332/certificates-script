@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/fs-extra": "^9.0.13",
+    "@types/uuid": "^9.0.1",
     "axios": "^0.27.2",
     "date-fns": "^2.29.3",
     "dotenv": "^16.0.2",
@@ -20,6 +21,7 @@
     "graphql-request": "^5.0.0",
     "moment": "^2.29.4",
     "pdfkit": "^0.13.0",
+    "uuid": "^9.0.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

@@ -12,11 +12,17 @@ export const GET_STPS_CATALOG = gql`
 `;
 
 export const GET_USER_COURSES_DC3_PER_INSTANCE = gql`
-  query GET_USER_COURSES_DC3_PER_INSTANCE($clientId: String) {
+  query GET_USER_COURSES_DC3_PER_INSTANCE(
+    $clientId: String
+    $dateStart: timestamptz
+    $dateEnd: timestamptz
+  ) {
     user_course_cl(
       where: {
+        completed_at: { _lte: $dateEnd, _gte: $dateStart }
         course: {
           client_id: { _eq: $clientId }
+          course_fb: {_eq: "o7TWeuFQREbrJDdWv36d"}
           dc3_data_json: { _is_null: false }
         }
       }
@@ -26,6 +32,8 @@ export const GET_USER_COURSES_DC3_PER_INSTANCE = gql`
       score
       status
       progress
+      course_fb
+      user_fb
       completed_at
       user {
         full_name
@@ -60,6 +68,7 @@ export const GET_USER_COURSES_DC3_PER_INSTANCE = gql`
         min_score
         course_fb
         min_progress
+        client_id
         name
         modules {
           id
@@ -76,19 +85,25 @@ export const GET_USER_COURSES_DC3_PER_INSTANCE = gql`
 `;
 
 export const GET_USERS_COURSE_PER_INSTANCE = gql`
-  query GET_USERS_COURSE_PER_INSTANCE($clientId: String) {
+  query GET_USERS_COURSE_PER_INSTANCE(
+    $clientId: String
+    $dateStart: timestamptz
+    $dateEnd: timestamptz
+  ) {
     user_course_cl(
       where: {
         user: { client_id: { _eq: $clientId } }
-        course: { dc3_data_json: { _is_null: true } }
+        completed_at: { _lte: $dateEnd, _gte: $dateStart }
       }
     ) {
       created_at
       last_update
       score
+      user_fb
       status
       progress
       completed_at
+      course_fb
       user {
         full_name
         client_id
@@ -166,25 +181,36 @@ export const GET_APPROVED_USERS_IN_MARKETPLACE = gql`
 `;
 
 export const GET_USER_COURSES = gql`
-  query GET_USER_COURSES($userFb: String) {
-    user_course_cl(where: { user: { user_fb: { _eq: $userFb } } }) {
-      score
-      progress
-      group_id
-      group_history
-      can_unsubscribe
-      course {
-        name
-        course_fb
+  query GET_USER_COURSES($email: String) {
+    users_cl(where: { email: { _eq: $email } }) {
+      user_fb
+      email
+      client_id
+      boss_user {
+        boss_fb
       }
-      user_lessons {
-        completed
-        course_id
-        lesson_fb
-        module_id
-        type
-        user_fb
+      user_courses_cl {
         score
+        progress
+        completed_at
+        group_id
+        group_history
+        can_unsubscribe
+        course {
+          name
+          course_fb
+          min_progress
+          min_score
+        }
+        user_lessons {
+          completed
+          course_id
+          lesson_fb
+          module_id
+          type
+          user_fb
+          score
+        }
       }
     }
   }
@@ -282,6 +308,75 @@ export const UPSERT_USER_LESSON = gql`
       numberOfTimes: number_of_times
       summary
       duration
+    }
+  }
+`;
+
+export const GET_USER_COURSES_DC3_MARKETPLACE_PER_INSTANCE = gql`
+  query GET_USER_COURSES_DC3_MARKETPLACE_PER_INSTANCE(
+    $clientId: String
+    $dateStart: timestamptz
+    $dateEnd: timestamptz
+  ) {
+    user_course_cl(
+      where: {
+        user: { client_id: { _eq: $clientId } }
+        course: {
+          client_id: { _eq: "content" }
+          dc3_data_json: { _is_null: false }
+        }
+      }
+    ) {
+      created_at
+      last_update
+      score
+      status
+      progress
+      completed_at
+      user {
+        full_name
+        client_id
+        email
+        user_fb
+        client {
+          name
+        }
+        first_name
+        last_name
+        curp
+        business_name {
+          shcp
+          name
+          boss_name
+          boss_name_workers
+          instructor {
+            full_name
+          }
+        }
+        user_ou {
+          name
+        }
+        additional_info_json
+        user_role {
+          name
+        }
+      }
+      course {
+        duration
+        min_score
+        course_fb
+        min_progress
+        name
+        modules {
+          id
+          name
+        }
+        instructors_data
+        created_at
+        created_by: created_by_json
+        type
+        dc3_data_json
+      }
     }
   }
 `;
