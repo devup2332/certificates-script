@@ -14,4 +14,3 @@ export const environments = {
   CERT_DC3_SERVER: process.env.CERT_DC3_SERVER || ""
 };
 
-console.log({ environments });

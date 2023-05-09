@@ -5,16 +5,6 @@ import moment from "moment";
 import axios from "axios";
 import { GraphQLClient } from "graphql-request";
 import { environments } from "./environments";
-import data1 from "../data/uinterceramic-1675425601777.json";
-import data2 from "../data/uinterceramic-1675512003951.json";
-import data3 from "../data/uinterceramic-1675598401761.json";
-import data4 from "../data/uinterceramic-1676030401367.json";
-import data5 from "../data/uinterceramic-1676635202444.json";
-import data6 from "../data/uinterceramic-1676721603983.json";
-import data7 from "../data/uinterceramic-1676808002372.json";
-import data8 from "../data/uinterceramic-1677240001498.json";
-import data9 from "../data/uinterceramic-1677326403387.json";
-import data10 from "../data/uinterceramic-1677412801691.json";
 
 import {
   GET_QUESTIONS_LESSON,
@@ -215,73 +205,6 @@ export const generateExcelForAllResourcesPerInstance = async () => {
   xlsx.writeFile(workbook, "./Reporte General de Recursos.xlsx");
 };
 
-export const getAllReviewsForAnInstance = async () => {
-  console.log({ clientId });
-  const dateStart = new Date("2023-03-01T00:00:00.000Z");
-  const dateEnd = new Date("2023-03-31T00:00:00.000Z");
-  console.log({ dateStart, dateEnd });
-  const { courses_cl, marketplace_data_tb } = await client.request(
-    GET_ALL_REVIEWS_FOR_AN_INSTANCE,
-    {
-      clientId,
-      dateStart,
-      dateEnd,
-    }
-  );
-  console.log({
-    courses_cl: courses_cl,
-    marketplace_data_tb: marketplace_data_tb.map((c: any) => {
-      return { course_reviews: c.courses_cl.course_reviews };
-    }),
-  });
-  const sheets: any[] = [];
-  const sheets2: any[] = [];
-  const workbook = xlsx.utils.book_new();
-  const workbook2 = xlsx.utils.book_new();
-
-  courses_cl
-    .filter((c: any) => c.course_reviews.length > 0)
-    .forEach((c: any, index: number) => {
-      const reviews = c.course_reviews.map((r: any) => {
-        console.log({ ra: moment(r.created_at), date: r.created_at, r });
-        return {
-          [c.name]: r.body,
-        };
-      });
-
-      const sheetCourse = xlsx.utils.json_to_sheet(reviews);
-      sheetCourse["!cols"] = [
-        {
-          wch: 200,
-        },
-      ];
-      sheets.push({ sheet: sheetCourse, courseName: `Course ${index}` });
-    });
-  marketplace_data_tb
-    .filter((c: any) => c.courses_cl.course_reviews.length > 0)
-    .forEach((c: any, index: number) => {
-      const reviews = c.courses_cl.course_reviews.map((r: any) => ({
-        [c.courses_cl.name]: r.body,
-      }));
-      const sheetCourse = xlsx.utils.json_to_sheet(reviews);
-      sheetCourse["!cols"] = [
-        {
-          wch: 200,
-        },
-      ];
-      sheets2.push({ sheet: sheetCourse, courseName: `Course ${index}` });
-    });
-
-  sheets.forEach((s: any) =>
-    xlsx.utils.book_append_sheet(workbook, s.sheet, s.courseName)
-  );
-  sheets2.forEach((s: any) =>
-    xlsx.utils.book_append_sheet(workbook2, s.sheet, s.courseName)
-  );
-  console.log(clientId);
-  xlsx.writeFile(workbook, "./Reviews Cursos Mazda.xlsx");
-  xlsx.writeFile(workbook2, "./Reviews Marketplace Mazda.xlsx");
-};
 
 export const generateExcelWithLogsPerInstance = () => {
   const { users } = data10;

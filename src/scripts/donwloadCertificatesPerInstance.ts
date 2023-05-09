@@ -1,6 +1,7 @@
 import { client } from "../graphql/client";
 import { GET_USERS_COURSE_PER_INSTANCE } from "../queries";
 import xlsx from "xlsx";
+import path from "path";
 import { format } from "date-fns";
 import { environments } from "../environments";
 import axios from "axios";
@@ -10,8 +11,8 @@ import fs from "fs-extra";
 
 export const downloadCertificatesPerInstance = async (clientId: string) => {
   try {
-    const dateStart = new Date("2022-01-01T00:00:00.000Z");
-    const dateEnd = new Date();
+    const dateStart = new Date("2023-04-01T00:00:00.000Z");
+    const dateEnd = new Date("2023-04-30T00:00:00.000Z");
     const { user_course_cl } = await client.request(
       GET_USERS_COURSE_PER_INSTANCE,
       { clientId, dateStart, dateEnd }
@@ -55,11 +56,13 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
       clientId,
       type: "Normal Certs",
     });
-    const pathFolder = `certificates/${clientId}`;
-    if (!fs.existsSync(pathFolder)) {
-      fs.mkdirsSync(pathFolder);
+    const pathFolder = path.resolve(__dirname, `../../certificates/${clientId}/`);
+    const exist = await fs.pathExists(pathFolder);
+    console.log({ exist });
+    if (!exist) {
+      await fs.mkdir(pathFolder);
     }
-    for (let i = 40; i < usersApproved.length; i++) {
+    for (let i = 0; i < usersApproved.length; i++) {
       console.log("Start", i);
       const { user, course, completed_at, user_fb, course_fb } =
         usersApproved[i];
@@ -110,7 +113,7 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
         .replace(/\s/g, "-")
         .replace(":", "")}-${user_fb}`;
       if (!fs.existsSync(userFilePath)) {
-        fs.mkdir(userFilePath);
+        await fs.mkdir(userFilePath);
       }
       const filename = `/${course.name
         .normalize("NFD")
