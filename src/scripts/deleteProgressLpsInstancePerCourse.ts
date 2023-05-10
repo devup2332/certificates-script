@@ -3,9 +3,8 @@ import { RESET_USER_COURSE_STATUS } from "../graphql/mutations/courses";
 import { GET_LEARNINGPATH_INFO } from "../graphql/queries/learningPaths";
 
 export const deleteProgressLpsInstancePerCourse = async () => {
-  const usersId = [
-    "yItPRCQkqugJidVHeG0ohC3jukp2"
-  ];
+  const usersId = ["yItPRCQkqugJidVHeG0ohC3jukp2"];
+
   const { learning_paths_cl } = await client.request(GET_LEARNINGPATH_INFO, {
     learningpathFb: "XI10yxTYDLYQn0IxsW2A",
   });
@@ -17,4 +16,3 @@ export const deleteProgressLpsInstancePerCourse = async () => {
   });
   console.log({ response });
 };
-
