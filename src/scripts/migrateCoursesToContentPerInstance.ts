@@ -17,13 +17,15 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
   });
 
   for (const course of courses) {
-    const { course_fb } = course;
+    const { course_fb, name } = course;
     const newCourseFb = makeid();
     const courseWithNewId = {
       ...course,
       course_fb: newCourseFb,
       client_id: "content",
+      origin: clientId,
     };
+
     const { modules, lessons, activities, weeks } = await client.request(
       GET_LESSONS_AND_MODULES_INFO_PER_COURSE,
       { courseFb: course_fb }
@@ -32,7 +34,7 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
     const { new_course } = await client.request(SAVE_NEW_COURSE, {
       input: courseWithNewId,
     });
-
+    console.log("Curso creado : " + name + " en Content");
     for (const module of modules) {
       const newModuleId = makeid();
       const moduleData = {
@@ -46,7 +48,7 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
       });
 
       if (course.type === "SM") {
-        const newWeeks = weeks.filter(
+        const newWeeks = weeks?.filter(
           (w: any) => w.module_fb === module.module_fb
         );
         for (const week of newWeeks) {
@@ -104,6 +106,7 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
         });
       }
     }
+    console.log("Insertando Lessons :" + name);
     for (const lesson of lessonsArray) {
       const data = { ...lesson };
       const questions = data.questions || [];
@@ -117,6 +120,7 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
         input: newData,
       });
 
+      console.log("Creando Leccion : " + lesson.name + " en el curso " + name);
       if (questions.length > 0) {
         const newQuestions = questions.map((lq: any) => ({
           ...lq,

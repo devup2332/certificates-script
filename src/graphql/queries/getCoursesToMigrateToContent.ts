@@ -4,6 +4,7 @@ export const GET_COURSES_TO_MIGRATE_TO_CONTENT = gql`
   query GET_COURSES_TO_MIGRATE_TO_CONTENT($clientId: String) {
     courses: courses_cl(
       where: { client_id: { _eq: $clientId }, stage: { _gte: 7 } }
+      limit: 2
     ) {
       topic_id
       image_url
@@ -31,6 +32,7 @@ export const GET_COURSES_TO_MIGRATE_TO_CONTENT = gql`
       privacity
       welcome_message
       reason
+      origin
       video_json
       is_deleted
       dc3Available
@@ -51,7 +53,9 @@ export const GET_COURSES_TO_MIGRATE_TO_CONTENT = gql`
 
 export const GET_LESSONS_AND_MODULES_INFO_PER_COURSE = gql`
   query GET_LESSONS_AND_MODULES_INFO_PER_COURSE($courseFb: String) {
-    modules: module_cl(where: { course_fb: { _eq: $courseFb } }) {
+    modules: module_cl(
+      where: { course_fb: { _eq: $courseFb }, deleted_at: { _is_null: true } }
+    ) {
       course_fb
       created_at
       deleted
@@ -63,7 +67,9 @@ export const GET_LESSONS_AND_MODULES_INFO_PER_COURSE = gql`
       updated_at
       accreditation
     }
-    weeks: weeks_tb(where: { course_fb: { _eq: $courseFb } }) {
+    weeks: weeks_tb(
+      where: { course_fb: { _eq: $courseFb }, deleted_at: { _is_null: true } }
+    ) {
       course_fb
       created_at
       deleted_at
@@ -89,7 +95,13 @@ export const GET_LESSONS_AND_MODULES_INFO_PER_COURSE = gql`
       updated_at
       week_fb
     }
-    lessons: lessons_cl(where: { course_fb: { _eq: $courseFb } }) {
+    lessons: lessons_cl(
+      where: {
+        course_fb: { _eq: $courseFb }
+        stage: { _is_null: false }
+        deleted_at: { _is_null: true }
+      }
+    ) {
       activity_id
       assign
       claps
