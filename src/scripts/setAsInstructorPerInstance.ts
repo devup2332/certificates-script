@@ -15,8 +15,9 @@ export const setAsInstructorPerInstance = async (clientId: string) => {
     if (instructors_json) {
       const instructors = [...instructors_json, ...ids];
       const noRepeted = [...new Set(instructors)];
+      const input = { instructors_json: noRepeted };
       await client.request(SET_NEW_INSTRUCTORS, {
-        input: noRepeted,
+        input,
         courseFb: course_fb,
       });
     }
