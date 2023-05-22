@@ -17,3 +17,5 @@ export const environments = {
   CERT_LWL_PDF: process.env.CERT_LWL_PDF || "",
   CERT_DC3_SERVER: process.env.CERT_DC3_SERVER || "",
 };
+
+console.log({ env: process.env.NODE_ENV, environments });
