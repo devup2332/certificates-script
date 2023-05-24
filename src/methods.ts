@@ -21,6 +21,6 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // downloadCertificatesPerInstance("azelis");
 // generateExcel()
 // downloadDC3CertificatesForAnInstance("solintegra");
-migrateCoursesToContentPerInstance("tecmilenio");
+// migrateCoursesToContentPerInstance("tecmilenio");
 // setAsInstructorPerInstance("universidadeacero")
 // generateCoursesListPerInstance('universidadexecon')
