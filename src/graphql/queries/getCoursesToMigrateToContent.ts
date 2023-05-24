@@ -3,9 +3,12 @@ import { gql } from "graphql-request";
 export const GET_COURSES_TO_MIGRATE_TO_CONTENT = gql`
   query GET_COURSES_TO_MIGRATE_TO_CONTENT($clientId: String) {
     courses: courses_cl(
-      where: { client_id: { _eq: $clientId }, stage: { _gte: 7 } }
-      limit: 1
-      offset: 2
+      where: {
+        client_id: { _eq: $clientId }
+        stage: { _gte: 7 }
+        type: { _eq: "OL" }
+      }
+      limit: 100
     ) {
       topic_id
       image_url

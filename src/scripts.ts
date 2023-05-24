@@ -43,47 +43,6 @@ const clientId = "universidadExecon";
 let index = 0;
 export const LARGE_NAMED_DATE_FORMAT = `dd 'de' MMMM 'del' yyyy`;
 
-
-export const generateExcel = async () => {
-  const { courses_cl } = await client.request(GET_COURSES_INSTANCE, {
-    clientId: "sanjacinto",
-  });
-  const { user_course_cl } = await client.request(
-    GET_COURSE_INTANCE_MARKETPLACE,
-    {
-      clientId: "sanjacinto",
-    }
-  );
-  const marketplaceCourses: any[] = [];
-  user_course_cl.forEach((uc: any) => {
-    const finded = marketplaceCourses.find((mk) => mk.name === uc.course.name);
-    if (finded) return;
-    marketplaceCourses.push({ name: uc.course.name });
-  });
-  const courses = [...courses_cl, ...marketplaceCourses].map((item) => ({
-    Name: item.name,
-  }));
-  console.log({ courses });
-  console.log({
-    length: courses_cl.length,
-    length2: marketplaceCourses.length,
-    length3: courses.length,
-  });
-
-  const workSheet = xlsx.utils.json_to_sheet(courses);
-  const workBook = xlsx.utils.book_new();
-  workSheet["!cols"] = [
-    {
-      wch: 80,
-    },
-  ];
-
-  xlsx.utils.book_append_sheet(workBook, workSheet, "Cursos Sanjacinto");
-  xlsx.writeFile(workBook, "./cursosSanjacinto.xlsx", {});
-};
-
-
-
 export const syncQuestionsForOneLesson = async () => {
   const { lessons_cl } = await client.request(GET_QUESTIONS_LESSON, {
     lessonFb: "xQiUxJYE2BPuFGtc7rtL",

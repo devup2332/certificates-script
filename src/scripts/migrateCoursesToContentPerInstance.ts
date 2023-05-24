@@ -1,23 +1,25 @@
-import { client } from "../graphql/client";
-import { SAVE_NEW_ACTIVITY } from "../graphql/mutations/newActivity";
-import { SAVE_NEW_COURSE } from "../graphql/mutations/newCourse";
-import { SAVE_NEW_LESSON } from "../graphql/mutations/newLesson";
-import { SAVE_NEW_MODULE } from "../graphql/mutations/newModule";
-import { SAVE_NEW_QUESTION } from "../graphql/mutations/newQuestion";
-import { SAVE_NEW_WEEK } from "../graphql/mutations/newWeek";
+import { knexClient } from "../database/knex";
 import {
-  GET_COURSES_TO_MIGRATE_TO_CONTENT,
-  GET_LESSONS_AND_MODULES_INFO_PER_COURSE,
-} from "../graphql/queries/getCoursesToMigrateToContent";
+  ActivitiesFields,
+  CourseFields,
+  LessonsFields,
+  ModulesFields,
+  QuestionsFields,
+} from "../database/schemas";
 import { makeid } from "../utils/makeId";
 
 export const migrateCoursesToContentPerInstance = async (clientId: string) => {
-  const { courses } = await client.request(GET_COURSES_TO_MIGRATE_TO_CONTENT, {
-    clientId,
-  });
+  const courses = await knexClient
+
+    .select(CourseFields)
+    .from("courses_cl")
+    .where("type", "OL")
+    .where("client_id", "=", clientId);
+
+  console.log({ courses: courses.length });
 
   for (const course of courses) {
-    const { course_fb, name } = course;
+    const { course_fb, name, type } = course;
     const newCourseFb = makeid();
     const courseWithNewId = {
       ...course,
@@ -26,14 +28,37 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
       origin: clientId,
     };
 
-    const { modules, lessons, activities, weeks } = await client.request(
-      GET_LESSONS_AND_MODULES_INFO_PER_COURSE,
-      { courseFb: course_fb }
-    );
+    for (const key in courseWithNewId) {
+      if (typeof courseWithNewId[key] === "object" && courseWithNewId[key]) {
+        const p = JSON.stringify(courseWithNewId[key]);
+        courseWithNewId[key] = p;
+      }
+    }
+    const modules = await knexClient
+      .select(ModulesFields)
+      .from("module_cl")
+      .where("course_fb", "=", course_fb);
+
+    const lessons = await knexClient
+      .select(LessonsFields)
+      .from("lessons_cl")
+      .where("course_fb", course_fb)
+      .whereNotNull("stage")
+      .whereNull("deleted_at");
+
+    const activities = await knexClient
+      .select(ActivitiesFields)
+      .from("activity_tb")
+      .where("course_fb", course_fb);
+
+    const weeks = await knexClient
+      .from("weeks_tb")
+      .where("course_fb", course_fb)
+      .whereNull("deleted_at");
+
     const lessonsArray: any[] = [];
-    const { new_course } = await client.request(SAVE_NEW_COURSE, {
-      input: courseWithNewId,
-    });
+    await knexClient.into("courses_cl").insert(courseWithNewId);
+
     console.log("Curso creado : " + name + " en Content");
     for (const module of modules) {
       const newModuleId = makeid();
@@ -43,11 +68,16 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
         module_fb: newModuleId,
       };
 
-      const { newModule } = await client.request(SAVE_NEW_MODULE, {
-        input: moduleData,
-      });
+      for (const key in moduleData) {
+        if (typeof moduleData[key] === "object" && moduleData[key]) {
+          const p = JSON.stringify(moduleData[key]);
+          moduleData[key] = p;
+        }
+      }
 
-      if (course.type === "SM") {
+      const response = await knexClient.into("module_cl").insert(moduleData);
+
+      if (type === "SM") {
         const newWeeks = weeks?.filter(
           (w: any) => w.module_fb === module.module_fb
         );
@@ -59,9 +89,15 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
             module_fb: newModuleId,
             week_fb: newWeekId,
           };
-          const response = await client.request(SAVE_NEW_WEEK, {
-            input: weekData,
-          });
+
+          for (const key in weekData) {
+            if (typeof weekData[key] === "object" && weekData[key]) {
+              const p = JSON.stringify(weekData[key]);
+              weekData[key] = p;
+            }
+          }
+
+          await knexClient.into("weeks_tb").insert(weekData);
 
           const newActivities = activities.filter(
             (act: any) => act.week_fb === week.week_fb
@@ -77,9 +113,14 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
               activity_fb: newActivityId,
             };
 
-            await client.request(SAVE_NEW_ACTIVITY, {
-              input: newActivity,
-            });
+            for (const key in newActivity) {
+              if (typeof newActivity[key] === "object" && newActivity[key]) {
+                const p = JSON.stringify(newActivity[key]);
+                newActivity[key] = p;
+              }
+            }
+
+            await knexClient.into("activity_tb").insert(newActivity);
             const newLessons = lessons.filter(
               (l: any) => l.activity_id === activity.activity_fb
             );
@@ -87,7 +128,7 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
               lessonsArray.push({
                 ...nl,
                 course_fb: newCourseFb,
-                module_id: newModule,
+                module_id: newModuleId,
                 activity_id: newActivityId,
               });
             });
@@ -109,16 +150,24 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
     console.log("Insertando Lessons :" + name);
     for (const lesson of lessonsArray) {
       const data = { ...lesson };
-      const questions = data.questions || [];
+      const questions =
+        (await knexClient
+          .select(QuestionsFields)
+          .from("lesson_questions_tb")
+          .where("lesson_fb", lesson.lesson_fb)) || [];
       const lessonId = makeid();
-      delete data.questions;
       const newData = {
         ...data,
         lesson_fb: lessonId,
       };
-      const { newLesson } = await client.request(SAVE_NEW_LESSON, {
-        input: newData,
-      });
+
+      for (const key in newData) {
+        if (typeof newData[key] === "object" && newData[key]) {
+          const p = JSON.stringify(newData[key]);
+          newData[key] = p;
+        }
+      }
+      await knexClient.into("lessons_cl").insert(newData);
 
       console.log("Creando Leccion : " + lesson.name + " en el curso " + name);
       if (questions.length > 0) {
@@ -127,9 +176,15 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
           lesson_fb: lessonId,
           question_fb: makeid(),
         }));
-        const response = await await client.request(SAVE_NEW_QUESTION, {
-          objects: newQuestions,
+        newQuestions.forEach((q: any) => {
+          for (const key in q) {
+            if (typeof q[key] === "object" && q[key]) {
+              const p = JSON.stringify(q[key]);
+              q[key] = p;
+            }
+          }
         });
+        await knexClient.into("lesson_questions_tb").insert(newQuestions);
       }
     }
   }
