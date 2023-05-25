@@ -10,15 +10,20 @@ import { makeid } from "../utils/makeId";
 
 export const migrateCoursesToContentPerInstance = async (clientId: string) => {
   const courses = await knexClient
-
     .select(CourseFields)
     .from("courses_cl")
     .where("type", "OL")
-    .where("client_id", "=", clientId);
+    .where("client_id", "=", clientId)
+    .where("stage", ">", "7")
+    .offset(5);
 
-  console.log({ courses: courses.length });
+  const testCourses = ["NSvKzBSwtZX179wiEz7f", "fEHLLYc8bYIdETPfgUPI"];
+  const coursesToMigrate = courses.filter((c: any) => {
+    return !testCourses.includes(c.course_fb);
+  });
 
-  for (const course of courses) {
+  console.log({ coursesToMigrate: coursesToMigrate.length });
+  for (const course of coursesToMigrate) {
     const { course_fb, name, type } = course;
     const newCourseFb = makeid();
     const courseWithNewId = {
@@ -75,9 +80,10 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
         }
       }
 
-      const response = await knexClient.into("module_cl").insert(moduleData);
+      await knexClient.into("module_cl").insert(moduleData);
 
       if (type === "SM") {
+        console.log(`Course type SM ${name}`);
         const newWeeks = weeks?.filter(
           (w: any) => w.module_fb === module.module_fb
         );
