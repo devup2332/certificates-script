@@ -12,24 +12,39 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
   const courses = await knexClient
     .select(CourseFields)
     .from("courses_cl")
-    .where("type", "OL")
+    .where("type", "DG")
     .where("client_id", "=", clientId)
-    .where("stage", ">", "7")
-    .offset(5);
+    .where("stage", ">", "7");
 
-  const testCourses = ["NSvKzBSwtZX179wiEz7f", "fEHLLYc8bYIdETPfgUPI"];
+  const listCoursesDegree = [
+    // "W3HzzvqmO54fmsF5RlpK",
+    "qV6mgBk7PoHkRhKq5tuh",
+    "UmQogV7nvGpeKZ02R1J0",
+    "QzNOSZW9JHJE5oiVtVxP",
+    "ks5P6Qim7GRnJtwdraRp",
+    "jkisHFoMPY8CQDnaqI24",
+    "ugwjC0YuZ6x64rPEuqTo",
+    "jATSxvddbcFtjvAVUfzs",
+    "FCOFChAPnqUw8RQECEnF",
+    "CasNRUwakXCio2PD6qOH",
+    "NoLUuMXZr2krGYmnQHz1",
+    "K9a8ZFOFmNEwDkeUaWbe",
+    "8RPr3L436KGXaH4SsKGD",
+  ];
   const coursesToMigrate = courses.filter((c: any) => {
-    return !testCourses.includes(c.course_fb);
+    return listCoursesDegree.includes(c.course_fb);
   });
 
-  console.log({ coursesToMigrate: coursesToMigrate.length });
+  console.log({
+    coursesToMigrate: coursesToMigrate.length,
+  });
   for (const course of coursesToMigrate) {
     const { course_fb, name, type } = course;
     const newCourseFb = makeid();
     const courseWithNewId = {
       ...course,
       course_fb: newCourseFb,
-      client_id: "content",
+      client_id: "digitalacademy",
       origin: clientId,
     };
 
@@ -64,7 +79,7 @@ export const migrateCoursesToContentPerInstance = async (clientId: string) => {
     const lessonsArray: any[] = [];
     await knexClient.into("courses_cl").insert(courseWithNewId);
 
-    console.log("Curso creado : " + name + " en Content");
+    console.log("Curso creado : " + name + " en Digital Academy");
     for (const module of modules) {
       const newModuleId = makeid();
       const moduleData = {
