@@ -1,4 +1,5 @@
 import { assign100AllForumsAndTasksUsers } from "./scripts/assign100AllForumsAndTaskUsers";
+import { assignCoursesToUser } from "./scripts/assignCoursesToUsers";
 import { deleteProgressLpsInstancePerCourse } from "./scripts/deleteProgressLpsInstancePerCourse";
 import { downloadCertificatesPerInstance } from "./scripts/donwloadCertificatesPerInstance";
 import { downloadDC3CertificatesForAnInstance } from "./scripts/downloadDC3Certificates";
@@ -27,4 +28,5 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // setAsInstructorPerInstance("universidadeacero")
 // generateCoursesListPerInstance('universidadexecon')
 // insertNewCompetencies();
-getReportCoursesNeo("centrovirtualfa")
+// getReportCoursesNeo("centrovirtualfa")
+assignCoursesToUser("tecmilenio");
