@@ -165,10 +165,10 @@ export const generateExcelForAllResourcesPerInstance = async () => {
 };
 
 
-export const generateExcelWithLogsPerInstance = () => {
-  const { users } = data10;
-  const sheet = xlsx.utils.json_to_sheet(users);
-  const workbook = xlsx.utils.book_new();
-  xlsx.utils.book_append_sheet(workbook, sheet, "users");
-  xlsx.writeFile(workbook, `./excels/uinterceramic-1677412801691.xlsx`);
-};
+// export const generateExcelWithLogsPerInstance = () => {
+//   const { users } = data10;
+//   const sheet = xlsx.utils.json_to_sheet(users);
+//   const workbook = xlsx.utils.book_new();
+//   xlsx.utils.book_append_sheet(workbook, sheet, "users");
+//   xlsx.writeFile(workbook, `./excels/uinterceramic-1677412801691.xlsx`);
+// };

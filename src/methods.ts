@@ -6,6 +6,7 @@ import { downloadDC3CertificatesForAnInstance } from "./scripts/downloadDC3Certi
 import { generateCoursesListPerInstance } from "./scripts/generateCoursesListPerInstance";
 import { getAllReviewsForAnInstance } from "./scripts/getAllReviewsForAnInstance";
 import { getReportCoursesNeo } from "./scripts/getReportCoursesNeo";
+import { identifyUsersInOtherInstances } from "./scripts/identifyUsersInOtherInstances";
 import { insertNewCompetencies } from "./scripts/insertNewCompetencies";
 import { migrateCoursesToContentPerInstance } from "./scripts/migrateCoursesToContentPerInstance";
 import { setAsInstructorPerInstance } from "./scripts/setAsInstructorPerInstance";
@@ -21,12 +22,13 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // syncQuestionsForOneLesson()
 // syncUsers()
 // syncUsersByExcel();
-// downloadCertificatesPerInstance("azelis");
+// downloadCertificatesPerInstance("universidadexecon");
 // generateExcel()
 // downloadDC3CertificatesForAnInstance("solintegra");
-// migrateCoursesToContentPerInstance("tecmilenio");
+migrateCoursesToContentPerInstance("tecmilenio");
 // setAsInstructorPerInstance("universidadeacero")
 // generateCoursesListPerInstance('universidadexecon')
 // insertNewCompetencies();
 // getReportCoursesNeo("centrovirtualfa")
-assignCoursesToUser("tecmilenio");
+// assignCoursesToUser("tecmilenio");
+// identifyUsersInOtherInstances()

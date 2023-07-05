@@ -22,7 +22,7 @@ export const GET_USER_COURSES_DC3_PER_INSTANCE = gql`
         completed_at: { _lte: $dateEnd, _gte: $dateStart }
         course: {
           client_id: { _eq: $clientId }
-          course_fb: {_eq: "o7TWeuFQREbrJDdWv36d"}
+          course_fb: { _eq: "o7TWeuFQREbrJDdWv36d" }
           dc3_data_json: { _is_null: false }
         }
       }
@@ -181,11 +181,12 @@ export const GET_APPROVED_USERS_IN_MARKETPLACE = gql`
 `;
 
 export const GET_USER_COURSES = gql`
-  query GET_USER_COURSES($email: String) {
-    users_cl(where: { email: { _eq: $email } }) {
+  query GET_USER_COURSES($emails: [String]) {
+    users_cl(where: { email: { _in: $emails } }) {
       user_fb
       email
       client_id
+      full_name
       boss_user {
         boss_fb
       }
@@ -220,16 +221,7 @@ export const INSERT_USER_COURSE = gql`
   mutation INSERT_USER_COURSE($input: [user_course_cl_insert_input!]!) {
     dataResult: insert_user_course_cl(
       objects: $input
-      on_conflict: {
-        constraint: user_course_cl_course_fb_user_fb_key
-        update_columns: [
-          score
-          progress
-          group_history
-          can_unsubscribe
-          group_id
-        ]
-      }
+      on_conflict: { constraint: user_course_cl_course_fb_user_fb_key }
     ) {
       affected_rows
     }

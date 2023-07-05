@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 
 dotenv.config({
-  path: process.env.NODE_ENV === "prod" ? ".env" : ".dev.env",
+  path: process.env.NODE_ENV === "prod " ? ".env" : ".dev.env",
 });
 
 export const environments = {
