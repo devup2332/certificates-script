@@ -11,8 +11,8 @@ import fs from "fs-extra";
 
 export const downloadCertificatesPerInstance = async (clientId: string) => {
   try {
-    const dateStart = new Date("2023-05-26T00:00:00.000Z");
-    const dateEnd = new Date("2023-06-26T00:00:00.000Z");
+    const dateStart = new Date("2023-06-01T00:00:00.000Z");
+    const dateEnd = new Date("2023-06-30T00:00:00.000Z");
     const { user_course_cl } = await client.request(
       GET_USERS_COURSE_PER_INSTANCE,
       { clientId, dateStart, dateEnd }
@@ -56,7 +56,10 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
       clientId,
       type: "Normal Certs",
     });
-    const pathFolder = path.resolve(__dirname, `../../certificates/${clientId}/`);
+    const pathFolder = path.resolve(
+      __dirname,
+      `../../certificates/${clientId}/`
+    );
     const exist = await fs.pathExists(pathFolder);
     console.log({ exist });
     if (!exist) {
@@ -70,7 +73,10 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
       if (course.client_id === "content") {
         console.log("Content");
         const params = {
-          name: user.full_name.normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
+          name: user.full_name
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(".", ""),
           course: course.name.normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
           date: format(new Date(completed_at), "dd MM yyyy"),
           ucid: user.user_fb,
@@ -79,7 +85,7 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
         };
         const searchParams = new URLSearchParams(params);
         const { data } = await axios.get(
-          `${environments.CERT_SERVER_URL}/${environments.CERT_LWL_PDF}?${searchParams}`
+          `${environments.CERT_SERVER_URL}${environments.CERT_LWL_PDF}?${searchParams}`
         );
         response = data;
       } else {
@@ -92,7 +98,7 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
         };
         const searchParams = new URLSearchParams(params);
         const { data } = await axios.get(
-          `${environments.CERT_SERVER_URL}/${environments.CERT_SERVER_ENDPOINT}?${searchParams}`
+          `${environments.CERT_SERVER_URL}${environments.CERT_SERVER_ENDPOINT}?${searchParams}`
         );
         response = data;
       }

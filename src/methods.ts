@@ -22,10 +22,10 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // syncQuestionsForOneLesson()
 // syncUsers()
 // syncUsersByExcel();
-// downloadCertificatesPerInstance("universidadexecon");
+downloadCertificatesPerInstance("azelis");
 // generateExcel()
 // downloadDC3CertificatesForAnInstance("solintegra");
-migrateCoursesToContentPerInstance("tecmilenio");
+// migrateCoursesToContentPerInstance("tecmilenio");
 // setAsInstructorPerInstance("universidadeacero")
 // generateCoursesListPerInstance('universidadexecon')
 // insertNewCompetencies();
