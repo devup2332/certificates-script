@@ -1,5 +1,6 @@
 import { assign100AllForumsAndTasksUsers } from "./scripts/assign100AllForumsAndTaskUsers";
 import { assignCoursesToUser } from "./scripts/assignCoursesToUsers";
+import { assignMPCoursesToAnInstance } from "./scripts/assignMPCoursesToAnInstance";
 import { deleteProgressLpsInstancePerCourse } from "./scripts/deleteProgressLpsInstancePerCourse";
 import { downloadCertificatesPerInstance } from "./scripts/donwloadCertificatesPerInstance";
 import { downloadDC3CertificatesForAnInstance } from "./scripts/downloadDC3Certificates";
@@ -22,7 +23,7 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // syncQuestionsForOneLesson()
 // syncUsers()
 // syncUsersByExcel();
-downloadCertificatesPerInstance("azelis");
+// downloadCertificatesPerInstance("azelis");
 // generateExcel()
 // downloadDC3CertificatesForAnInstance("solintegra");
 // migrateCoursesToContentPerInstance("tecmilenio");
@@ -32,3 +33,4 @@ downloadCertificatesPerInstance("azelis");
 // getReportCoursesNeo("centrovirtualfa")
 // assignCoursesToUser("tecmilenio");
 // identifyUsersInOtherInstances()
+assignMPCoursesToAnInstance("demo")

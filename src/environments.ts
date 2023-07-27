@@ -1,8 +1,6 @@
 import dotenv from "dotenv";
 
-dotenv.config({
-  path: process.env.NODE_ENV === "prod " ? ".env" : ".dev.env",
-});
+dotenv.config();
 
 export const environments = {
   GRAPHQL_BACKEND_URI: process.env.GRAPHQL_BACKEND_URI || "",
