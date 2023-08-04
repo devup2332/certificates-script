@@ -10,6 +10,7 @@ import { getReportCoursesNeo } from "./scripts/getReportCoursesNeo";
 import { identifyUsersInOtherInstances } from "./scripts/identifyUsersInOtherInstances";
 import { insertNewCompetencies } from "./scripts/insertNewCompetencies";
 import { migrateCoursesToContentPerInstance } from "./scripts/migrateCoursesToContentPerInstance";
+import { migrateRubrics } from "./scripts/migrateRubrics";
 import { setAsInstructorPerInstance } from "./scripts/setAsInstructorPerInstance";
 import { syncUsers } from "./scripts/syncUsers";
 import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
@@ -33,4 +34,5 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // getReportCoursesNeo("centrovirtualfa")
 // assignCoursesToUser("tecmilenio");
 // identifyUsersInOtherInstances()
-assignMPCoursesToAnInstance("demo")
+// assignMPCoursesToAnInstance("demo")
+migrateRubrics();
