@@ -4,6 +4,7 @@ import { assignMPCoursesToAnInstance } from "./scripts/assignMPCoursesToAnInstan
 import { deleteProgressLpsInstancePerCourse } from "./scripts/deleteProgressLpsInstancePerCourse";
 import { downloadCertificatesPerInstance } from "./scripts/donwloadCertificatesPerInstance";
 import { downloadDC3CertificatesForAnInstance } from "./scripts/downloadDC3Certificates";
+import { extractContentPerInstance } from "./scripts/extractContentPerInstance";
 import { generateCoursesListPerInstance } from "./scripts/generateCoursesListPerInstance";
 import { getAllReviewsForAnInstance } from "./scripts/getAllReviewsForAnInstance";
 import { getReportCoursesNeo } from "./scripts/getReportCoursesNeo";
@@ -35,4 +36,5 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // assignCoursesToUser("tecmilenio");
 // identifyUsersInOtherInstances()
 // assignMPCoursesToAnInstance("demo")
-migrateRubrics();
+// migrateRubrics();
+extractContentPerInstance('rotoplas')
