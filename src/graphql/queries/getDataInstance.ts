@@ -10,6 +10,7 @@ export const GET_DATA_INSTANCE = gql`
       type
       lessons(
         where: {
+          deleted_at: { _is_null: true }
           _or: [
             { stage: { _gte: 3 } }
             { stage: { _gte: 2 }, type: { _eq: "M" } }

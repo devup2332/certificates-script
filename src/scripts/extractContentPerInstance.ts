@@ -5,11 +5,14 @@ import { client } from "../graphql/client";
 import { GET_DATA_INSTANCE } from "../graphql/queries/getDataInstance";
 import xlsx from "xlsx";
 import { environments } from "../environments";
+import { normalizeName } from "../utils/normalizeString";
 
 export const extractContentPerInstance = async (clientId: string) => {
+  console.log("Getting Data");
   const { courses } = await client.request(GET_DATA_INSTANCE, {
     clientId,
   });
+  console.log("Reading File");
   const wb = xlsx.readFile("Courses.xlsx");
   const sheets = wb.SheetNames;
   const data = xlsx.utils
@@ -17,10 +20,6 @@ export const extractContentPerInstance = async (clientId: string) => {
     .map((i: any) => ({ name: i["Nombre del Curso "] }));
   const coursesToDownload: any[] = [];
   const forumTasks: any[] = [];
-  const videos: any[] = [];
-  const questionsData: any[] = [];
-  const embedLessons: any[] = [];
-  const optionsQuestions: any[] = [];
   let counter = 0;
   data.forEach((c: any) => {
     const finded = courses.filter((i: any) => {
@@ -31,22 +30,26 @@ export const extractContentPerInstance = async (clientId: string) => {
     }
   });
 
-  for (const course of coursesToDownload) {
-    const { lessons, name: courseName, course_fb } = course;
-    const hasLectureLessons = lessons.find(
-      (l: any) => l.type === "L" && l.subtype === "PDF",
-    );
+  const coursesNoScorm = coursesToDownload.filter((c: any) => {
+    const { lessons: l } = c;
+    const finded = l.filter((l: any) => l.type === "A");
+    return !finded.length;
+  });
+
+  console.log("Data Ready");
+  for (let i = 0; i < coursesNoScorm.length; i++) {
+    const { lessons, name: courseName, course_fb } = coursesNoScorm[i];
+    console.log(`${i}.- ${courseName} - ${course_fb}`);
+    const courseNameReady = normalizeName(courseName);
 
     const courseFolderPath = path.resolve(
       __dirname,
-      `../../coursesResources/${courseName.trimStart().trimEnd()}-${course_fb}`,
+      `../../coursesResources/${courseNameReady}-${course_fb}`
     );
-    if (hasLectureLessons) {
-      const courseFolderExist = await fs.pathExists(courseFolderPath);
+    const courseFolderExist = await fs.pathExists(courseFolderPath);
 
-      if (!courseFolderExist) {
-        await fs.mkdirs(courseFolderPath);
-      }
+    if (!courseFolderExist) {
+      await fs.mkdirs(courseFolderPath);
     }
 
     for (const lesson of lessons) {
@@ -61,40 +64,29 @@ export const extractContentPerInstance = async (clientId: string) => {
         video,
         lesson_fb,
         questions,
+        embed_json,
       } = lesson;
 
-      if (type === "H") {
-        embedLessons.push({ ...lesson, courseName });
-      }
+      const nameModuleReady = normalizeName(module?.name);
 
-      if (type === "L" && subtype === "PDF" && lecture.pdfUrl) {
-        continue;
-        const modulePath = `${courseFolderPath}/${module?.name
-          .trimStart()
-          .trimEnd()
-          .replace("/", "")}-${module_id}`;
+      const nameLessonReady = normalizeName(name || "Leccion sin nombre");
 
+      const modulePath = `${courseFolderPath}/${nameModuleReady}-${module_id}`;
+      if (["L", "H", "E", "V", "S"].includes(type)) {
         const modulePathExist = await fs.pathExists(modulePath);
 
         if (!modulePathExist) {
           await fs.mkdir(modulePath);
         }
-        const lecturePathExist = await fs.pathExists(`${modulePath}/lectures`);
-        if (!lecturePathExist) {
-          await fs.mkdir(`${modulePath}/lectures`);
-        }
-        console.log("Downloading Lecture type PDF");
-        const response = await axios.get(lecture.pdfUrl, {
-          responseType: "arraybuffer",
-        });
-        await fs.writeFile(
-          `${modulePath}/lectures/lecture-${name}.pdf`,
-          response.data,
-        );
-        console.log("Download End");
       }
-
-      if (type === "E") {
+      if (type === "S") {
+        console.log(`${name} - ${lesson_fb}`);
+        const surveyDirExist = await fs.pathExists(`${modulePath}/encuestas`);
+        if (!surveyDirExist) {
+          await fs.mkdir(`${modulePath}/encuestas`);
+        }
+        const questionsData: any[] = [];
+        const optionsData: any[] = [];
         for (const q of questions) {
           const { options, question_fb, text, image_url, answer } = q;
           let qType = "";
@@ -117,6 +109,7 @@ export const extractContentPerInstance = async (clientId: string) => {
             default:
               break;
           }
+
           questionsData.push({
             courseName,
             courseId: course_fb,
@@ -129,9 +122,148 @@ export const extractContentPerInstance = async (clientId: string) => {
             answer,
           });
           for (const opt of options) {
-            optionsQuestions.push({ ...opt, questionId: question_fb });
+            optionsData.push({ ...opt, questionId: question_fb });
           }
         }
+        const b1 = xlsx.utils.book_new();
+        const dataForExcel = questionsData.map((q: any) => ({
+          "Id de la leccion": lesson_fb,
+          "Id de la pregunta": q.questionId,
+          "Nombre de la Leccion": name,
+          "Nombre del Curso": courseName,
+          "Nombre del Modulo": module?.name || "",
+          "Tipo de pregunta": q.qType,
+          "Texto de la pregunta": q.textQuestion,
+        }));
+        const s1 = xlsx.utils.json_to_sheet(dataForExcel);
+        const s2 = xlsx.utils.json_to_sheet(
+          optionsData.map((opt: any) => ({
+            "Id de la pregunta": opt.questionId,
+            Text: opt.text,
+            Explicacion: opt.explain,
+            Indice: opt.index,
+          }))
+        );
+        xlsx.utils.book_append_sheet(b1, s1, "Preguntas");
+        xlsx.utils.book_append_sheet(b1, s2, "Opciones");
+        xlsx.writeFile(
+          b1,
+          `${modulePath}/encuestas/${nameLessonReady}-${lesson_fb}.xlsx`
+        );
+      }
+      continue;
+      if (type === "H") {
+        const embededDirExist = await fs.pathExists(`${modulePath}/embeded`);
+        if (!embededDirExist) {
+          await fs.mkdir(`${modulePath}/embeded`);
+        }
+        const b1 = xlsx.utils.book_new();
+        const s1 = xlsx.utils.json_to_sheet([
+          {
+            "Id de la leccion": lesson_fb,
+            "Nombre de la Leccion": name,
+            "Nombre del Curso": courseName,
+            "Nombre del Modulo": module?.name || "",
+            "Url del Recurso": embed_json.url,
+          },
+        ]);
+        xlsx.utils.book_append_sheet(b1, s1, "Embebidos");
+        await xlsx.writeFile(
+          b1,
+          `${modulePath}/embeded/${nameLessonReady}-${lesson_fb}.xlsx`
+        );
+      }
+
+      if (type === "L" && subtype === "PDF" && lecture.pdfUrl) {
+        const lecturePathExist = await fs.pathExists(`${modulePath}/lecturas`);
+        if (!lecturePathExist) {
+          await fs.mkdir(`${modulePath}/lecturas`);
+        }
+        console.log("Downloading Lecture type PDF");
+        const response = await axios.get(lecture.pdfUrl, {
+          responseType: "arraybuffer",
+        });
+        await fs.writeFile(
+          `${modulePath}/lecturas/lecture-${nameLessonReady}.pdf`,
+          response.data
+        );
+        console.log("Download End");
+      }
+
+      if (type === "E") {
+        const evaluationDirExist = await fs.pathExists(
+          `${modulePath}/evaluaciones`
+        );
+        if (!evaluationDirExist) {
+          await fs.mkdir(`${modulePath}/evaluaciones`);
+        }
+        const questionsData: any[] = [];
+        const optionsData: any[] = [];
+        for (const q of questions) {
+          const { options, question_fb, text, image_url, answer } = q;
+          let qType = "";
+          switch (q.type) {
+            case "MULTIPLE":
+              qType = "Opcion Multiple";
+              break;
+
+            case "SURVEY":
+              qType = "Opcion Multiple";
+              break;
+
+            case "PHOTO":
+              qType = "Imagen";
+              break;
+
+            case "RELATION":
+              qType = "Relacion";
+              break;
+            default:
+              break;
+          }
+
+          questionsData.push({
+            courseName,
+            courseId: course_fb,
+            qType,
+            imageUrl: image_url,
+            lessonId: lesson_fb,
+            questionId: question_fb,
+            lessonName: name,
+            textQuestion: text,
+            answer,
+          });
+          for (const opt of options) {
+            optionsData.push({ ...opt, questionId: question_fb });
+          }
+        }
+        const b1 = xlsx.utils.book_new();
+        const dataForExcel = questionsData.map((q: any) => ({
+          "Id de la leccion": lesson_fb,
+          "Id de la pregunta": q.questionId,
+          "Nombre de la Leccion": name,
+          "Nombre del Curso": courseName,
+          "Nombre del Modulo": module?.name || "",
+          "Tipo de pregunta": q.qType,
+          "Texto de la pregunta": q.textQuestion,
+          "Imagen de la pregunta": q.imageUrl,
+          Respuesta: q.answer,
+        }));
+        const s1 = xlsx.utils.json_to_sheet(dataForExcel);
+        const s2 = xlsx.utils.json_to_sheet(
+          optionsData.map((opt: any) => ({
+            "Id de la pregunta": opt.questionId,
+            Text: opt.text,
+            Explicacion: opt.explain,
+            Indice: opt.index,
+          }))
+        );
+        xlsx.utils.book_append_sheet(b1, s1, "Preguntas");
+        xlsx.utils.book_append_sheet(b1, s2, "Opciones");
+        xlsx.writeFile(
+          b1,
+          `${modulePath}/evaluaciones/${nameLessonReady}-${lesson_fb}.xlsx`
+        );
       }
 
       if (type === "L" && subtype === "HTML") {
@@ -139,71 +271,92 @@ export const extractContentPerInstance = async (clientId: string) => {
       }
 
       if (type === "V" && video) {
-        // if (video.type === "Rotoplas")
-        //   videos.push({ ...lesson, courseName, moduleName: module.name });
-        // if (video.type === "Vimeo") {
-        //   const { code } = video;
-        //   const url = `https://api.vimeo.com/me/videos/${code}?fields=files`;
-        //   const { data: vimeoData } = await axios.get(url, {
-        //     headers: {
-        //       Authorization: `bearer ${environments.VIMEO_ACCESS_TOKEN}`,
-        //     },
-        //   });
-        //   for (const v of vimeoData.files) {
-        //     if (v.rendition === "1080p")
-        //       videos.push({
-        //         ...lesson,
-        //         courseName,
-        //         moduleName: module.name,
-        //         videoUrl: v.link_secure,
-        //       });
-        //   }
-        // }
+        const videosDirExist = await fs.pathExists(`${modulePath}/videos`);
+        if (!videosDirExist) {
+          await fs.mkdir(`${modulePath}/videos`);
+        }
+        const b1 = xlsx.utils.book_new();
+        let s1: xlsx.WorkSheet;
+        if (video.type === "Rotoplas") {
+          s1 = xlsx.utils.json_to_sheet([
+            {
+              "Id de la leccion": lesson_fb,
+              "Nombre de la Leccion": name,
+              "Nombre del Curso": courseName,
+              "Nombre del Modulo": module?.name || "",
+              "Url del Video": video.videoUrl,
+            },
+          ]);
+        }
+        if (video.type === "Vimeo") {
+          const { code } = video;
+          const url = `https://api.vimeo.com/me/videos/${code}?fields=files`;
+          const { data: vimeoData } = await axios.get(url, {
+            headers: {
+              Authorization: `bearer ${environments.VIMEO_ACCESS_TOKEN}`,
+            },
+          });
+          for (const v of vimeoData.files) {
+            if (v.rendition === "1080p")
+              s1 = xlsx.utils.json_to_sheet([
+                {
+                  "Id de la leccion": lesson_fb,
+                  "Nombre de la Leccion": name,
+                  "Nombre del Curso": courseName,
+                  "Nombre del Modulo": module?.name || "",
+                  "Url del Video": v.link_secure,
+                },
+              ]);
+          }
+        }
+        xlsx.utils.book_append_sheet(b1, s1!, "Videos");
+        xlsx.writeFile(
+          b1,
+          `${modulePath}/videos/${nameLessonReady}-${lesson_fb}.xlsx`
+        );
       }
 
-      if ((type === "F" || type === "T") && description) {
-        forumTasks.push({
-          ...lesson,
-          courseName,
-          moduleName: module?.name || "",
-        });
-      }
-      console.log(counter);
-      counter++;
+      // if ((type === "F" || type === "T") && description) {
+      //   forumTasks.push({
+      //     ...lesson,
+      //     courseName,
+      //     moduleName: module?.name || "",
+      //   });
+      // }
     }
   }
 
-  const coursesTypeScorm = xlsx.utils.json_to_sheet(
-    coursesToDownload
-      .filter((c: any) => {
-        const { lessons: lc } = c;
-        const f = lc.find((l: any) => l.type === "A");
-        return f;
-      })
-      .map((c: any) => {
-        return {
-          "Id del curso": c.course_fb,
-          "Nombre del Curso": c.name,
-        };
-      }),
-  );
-  const coursesNoTypeScorm = xlsx.utils.json_to_sheet(
-    coursesToDownload
-      .filter((c: any) => {
-        const { lessons: lc } = c;
-        const find = lc.filter((l: any) => l.type === "A");
-        return !find.length;
-      })
-      .map((c: any) => {
-        return {
-          "Id del curso": c.course_fb,
-          "Nombre del Curso": c.name,
-        };
-      }),
-  );
-  console.log({
-    coursesToDownload: coursesToDownload.length,
-  });
+  // const coursesTypeScorm = xlsx.utils.json_to_sheet(
+  //   coursesToDownload
+  //     .filter((c: any) => {
+  //       const { lessons: lc } = c;
+  //       const f = lc.find((l: any) => l.type === "A");
+  //       return f;
+  //     })
+  //     .map((c: any) => {
+  //       return {
+  //         "Id del curso": c.course_fb,
+  //         "Nombre del Curso": c.name,
+  //       };
+  //     })
+  // );
+  // const coursesNoTypeScorm = xlsx.utils.json_to_sheet(
+  //   coursesToDownload
+  //     .filter((c: any) => {
+  //       const { lessons: lc } = c;
+  //       const find = lc.filter((l: any) => l.type === "A");
+  //       return !find.length;
+  //     })
+  //     .map((c: any) => {
+  //       return {
+  //         "Id del curso": c.course_fb,
+  //         "Nombre del Curso": c.name,
+  //       };
+  //     })
+  // );
+  // console.log({
+  //   coursesToDownload: coursesToDownload.length,
+  // });
 
   // const s = xlsx.utils.json_to_sheet(
   //   forumTasks.map((i) => ({
@@ -252,14 +405,14 @@ export const extractContentPerInstance = async (clientId: string) => {
   //   })),
   // );
   // const wbook = xlsx.utils.book_new();
-  const wbook2 = xlsx.utils.book_new();
+  // const wbook2 = xlsx.utils.book_new();
   // xlsx.utils.book_append_sheet(wbook, s, "ForumTasks");
   // xlsx.utils.book_append_sheet(wbook, s2, "Videos");
   // xlsx.utils.book_append_sheet(wbook, s3, "Recursos Embebidos");
   // xlsx.utils.book_append_sheet(wbook, qs, "Preguntas de Evaluaciones");
   // xlsx.utils.book_append_sheet(wbook, optsQ, "Opciones de las Preguntas");
-  xlsx.utils.book_append_sheet(wbook2, coursesTypeScorm, "Cursos Scorms");
-  xlsx.utils.book_append_sheet(wbook2, coursesNoTypeScorm, "Cursos no Scorm");
+  // xlsx.utils.book_append_sheet(wbook2, coursesTypeScorm, "Cursos Scorms");
+  // xlsx.utils.book_append_sheet(wbook2, coursesNoTypeScorm, "Cursos no Scorm");
   // xlsx.writeFile(wbook, "ForumTasks.xlsx");
-  xlsx.writeFile(wbook2, "CoursesScorm.xlsx");
+  // xlsx.writeFile(wbook2, "CoursesScorm.xlsx");
 };

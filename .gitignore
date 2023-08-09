@@ -2,6 +2,7 @@
 node_modules
 serviceAccount.json
 build
+Rotoplas
 certificates
 certificatesChinoin
 DC3Certificates
