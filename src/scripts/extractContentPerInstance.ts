@@ -42,18 +42,42 @@ export const extractContentPerInstance = async (clientId: string) => {
   console.log("Data Ready");
   for (let i = 0; i < coursesNoScorm.length; i++) {
     const { lessons, name: courseName, course_fb } = coursesNoScorm[i];
-    console.log(`${i}.- ${courseName} - ${course_fb}`);
+    // console.log(`${i}.- ${courseName} - ${course_fb}`);
     const courseNameReady = normalizeName(courseName);
 
     const courseFolderPath = path.resolve(
       __dirname,
-      `../../coursesResources/${courseNameReady}-${course_fb}`
+      `../../coursesResources/${courseNameReady}-${course_fb}`,
     );
     const courseFolderExist = await fs.pathExists(courseFolderPath);
 
     if (!courseFolderExist) {
       await fs.mkdirs(courseFolderPath);
     }
+
+    // Courses without Lessons will be printend on console
+    if (!lessons.length) console.log(`${courseName} - ${course_fb}`);
+
+    const acceptedLessons = lessons.filter((l: any) => {
+      return ["L", "H", "E", "V", "S", "F", "T"].includes(l.type);
+    });
+
+    const w1 = xlsx.utils.book_new();
+    const s1 = xlsx.utils.json_to_sheet(
+      acceptedLessons.map((l: any) => {
+        const { type, name, module, module_id, lesson_fb } = l;
+        return {
+          "Id de la leccion": lesson_fb,
+          "Id del modulo": module_id,
+          "Nombre de la leccion": name,
+          "Nombre del Modulo": module.name,
+          "Tipo de recurso": type,
+        };
+      }),
+    );
+
+    xlsx.utils.book_append_sheet(w1, s1, "Recursos");
+    await xlsx.writeFile(w1, `${courseFolderPath}/Resources-${course_fb}.xlsx`);
 
     for (const lesson of lessons) {
       const {
@@ -76,14 +100,13 @@ export const extractContentPerInstance = async (clientId: string) => {
       const nameLessonReady = normalizeName(name || "Leccion sin nombre");
 
       const modulePath = `${courseFolderPath}/${nameModuleReady}-${module_id}`;
-      if (["L", "H", "E", "V", "S"].includes(type)) {
+      if (["L", "H", "E", "V", "S", "F", "T"].includes(type)) {
         const modulePathExist = await fs.pathExists(modulePath);
 
         if (!modulePathExist) {
           await fs.mkdir(modulePath);
         }
       }
-      if (type !== "L" && subtype !== "HTML") continue;
       if (type === "S") {
         const surveyDirExist = await fs.pathExists(`${modulePath}/encuestas`);
         if (!surveyDirExist) {
@@ -146,13 +169,13 @@ export const extractContentPerInstance = async (clientId: string) => {
             Text: opt.text,
             Explicacion: opt.explain,
             Indice: opt.index,
-          }))
+          })),
         );
         xlsx.utils.book_append_sheet(b1, s1, "Preguntas");
         xlsx.utils.book_append_sheet(b1, s2, "Opciones");
         xlsx.writeFile(
           b1,
-          `${modulePath}/encuestas/${nameLessonReady}-${lesson_fb}.xlsx`
+          `${modulePath}/encuestas/${nameLessonReady}-${lesson_fb}.xlsx`,
         );
       }
       if (type === "H") {
@@ -173,12 +196,11 @@ export const extractContentPerInstance = async (clientId: string) => {
         xlsx.utils.book_append_sheet(b1, s1, "Embebidos");
         await xlsx.writeFile(
           b1,
-          `${modulePath}/embeded/${nameLessonReady}-${lesson_fb}.xlsx`
+          `${modulePath}/embeded/${nameLessonReady}-${lesson_fb}.xlsx`,
         );
       }
 
       if (type === "L" && subtype === "PDF" && lecture.pdfUrl) {
-        continue;
         const lecturePathExist = await fs.pathExists(`${modulePath}/lecturas`);
         if (!lecturePathExist) {
           await fs.mkdir(`${modulePath}/lecturas`);
@@ -189,14 +211,14 @@ export const extractContentPerInstance = async (clientId: string) => {
         });
         await fs.writeFile(
           `${modulePath}/lecturas/lecture-${nameLessonReady}.pdf`,
-          response.data
+          response.data,
         );
         console.log("Download End");
       }
 
       if (type === "E") {
         const evaluationDirExist = await fs.pathExists(
-          `${modulePath}/evaluaciones`
+          `${modulePath}/evaluaciones`,
         );
         if (!evaluationDirExist) {
           await fs.mkdir(`${modulePath}/evaluaciones`);
@@ -260,13 +282,13 @@ export const extractContentPerInstance = async (clientId: string) => {
             Text: opt.text,
             Explicacion: opt.explain,
             Indice: opt.index,
-          }))
+          })),
         );
         xlsx.utils.book_append_sheet(b1, s1, "Preguntas");
         xlsx.utils.book_append_sheet(b1, s2, "Opciones");
         xlsx.writeFile(
           b1,
-          `${modulePath}/evaluaciones/${nameLessonReady}-${lesson_fb}.xlsx`
+          `${modulePath}/evaluaciones/${nameLessonReady}-${lesson_fb}.xlsx`,
         );
       }
 
@@ -275,6 +297,7 @@ export const extractContentPerInstance = async (clientId: string) => {
         if (!lecturePathExist) {
           await fs.mkdir(`${modulePath}/lecturas`);
         }
+        console.log("Downloading lecture type HTML");
         const html = lecture.htmlBlob;
         const browser = await puppeteer.launch({ headless: "new" });
         const page = await browser.newPage();
@@ -282,6 +305,8 @@ export const extractContentPerInstance = async (clientId: string) => {
         await page.pdf({
           path: `${modulePath}/lecturas/${nameLessonReady}-${lesson_fb}.pdf`,
         });
+        await browser.close();
+        console.log("End");
       }
 
       if (type === "V" && video) {
@@ -326,17 +351,40 @@ export const extractContentPerInstance = async (clientId: string) => {
         xlsx.utils.book_append_sheet(b1, s1!, "Videos");
         xlsx.writeFile(
           b1,
-          `${modulePath}/videos/${nameLessonReady}-${lesson_fb}.xlsx`
+          `${modulePath}/videos/${nameLessonReady}-${lesson_fb}.xlsx`,
         );
       }
 
-      // if ((type === "F" || type === "T") && description) {
-      //   forumTasks.push({
-      //     ...lesson,
-      //     courseName,
-      //     moduleName: module?.name || "",
-      //   });
-      // }
+      if (type === "T" && description) {
+        const forosDirExist = await fs.pathExists(`${modulePath}/tareas`);
+        if (!forosDirExist) {
+          await fs.mkdir(`${modulePath}/tareas`);
+        }
+        console.log("Downloading Task");
+        const browser = await puppeteer.launch({ headless: "new" });
+        const page = await browser.newPage();
+        await page.setContent(description);
+        await page.pdf({
+          path: `${modulePath}/tareas/${nameLessonReady}-${lesson_fb}.pdf`,
+        });
+        await browser.close();
+        console.log("End");
+      }
+      if (type === "F" && description) {
+        const forosDirExist = await fs.pathExists(`${modulePath}/foros`);
+        if (!forosDirExist) {
+          await fs.mkdir(`${modulePath}/foros`);
+        }
+        console.log("Downloading foro");
+        const browser = await puppeteer.launch({ headless: "new" });
+        const page = await browser.newPage();
+        await page.setContent(description);
+        await page.pdf({
+          path: `${modulePath}/foros/${nameLessonReady}-${lesson_fb}.pdf`,
+        });
+        await browser.close();
+        console.log("End");
+      }
     }
   }
 

@@ -37,4 +37,4 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // identifyUsersInOtherInstances()
 // assignMPCoursesToAnInstance("demo")
 // migrateRubrics();
-extractContentPerInstance('rotoplas')
+// extractContentPerInstance('rotoplas')
