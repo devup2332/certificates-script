@@ -1,7 +1,10 @@
 import axios from "axios";
+import html2pdf from "html-pdf-node";
 import fs from "fs-extra";
+import hb from "handlebars";
 import path from "path";
 import { client } from "../graphql/client";
+import puppeteer from "puppeteer";
 import { GET_DATA_INSTANCE } from "../graphql/queries/getDataInstance";
 import xlsx from "xlsx";
 import { environments } from "../environments";
@@ -67,6 +70,7 @@ export const extractContentPerInstance = async (clientId: string) => {
         embed_json,
       } = lesson;
 
+      console.log(`${name} - ${lesson_fb}`);
       const nameModuleReady = normalizeName(module?.name);
 
       const nameLessonReady = normalizeName(name || "Leccion sin nombre");
@@ -79,8 +83,8 @@ export const extractContentPerInstance = async (clientId: string) => {
           await fs.mkdir(modulePath);
         }
       }
+      if (type !== "L" && subtype !== "HTML") continue;
       if (type === "S") {
-        console.log(`${name} - ${lesson_fb}`);
         const surveyDirExist = await fs.pathExists(`${modulePath}/encuestas`);
         if (!surveyDirExist) {
           await fs.mkdir(`${modulePath}/encuestas`);
@@ -151,7 +155,6 @@ export const extractContentPerInstance = async (clientId: string) => {
           `${modulePath}/encuestas/${nameLessonReady}-${lesson_fb}.xlsx`
         );
       }
-      continue;
       if (type === "H") {
         const embededDirExist = await fs.pathExists(`${modulePath}/embeded`);
         if (!embededDirExist) {
@@ -175,6 +178,7 @@ export const extractContentPerInstance = async (clientId: string) => {
       }
 
       if (type === "L" && subtype === "PDF" && lecture.pdfUrl) {
+        continue;
         const lecturePathExist = await fs.pathExists(`${modulePath}/lecturas`);
         if (!lecturePathExist) {
           await fs.mkdir(`${modulePath}/lecturas`);
@@ -267,7 +271,17 @@ export const extractContentPerInstance = async (clientId: string) => {
       }
 
       if (type === "L" && subtype === "HTML") {
-        forumTasks.push({ ...lesson, courseName, moduleName: module.name });
+        const lecturePathExist = await fs.pathExists(`${modulePath}/lecturas`);
+        if (!lecturePathExist) {
+          await fs.mkdir(`${modulePath}/lecturas`);
+        }
+        const html = lecture.htmlBlob;
+        const browser = await puppeteer.launch({ headless: "new" });
+        const page = await browser.newPage();
+        await page.setContent(html);
+        await page.pdf({
+          path: `${modulePath}/lecturas/${nameLessonReady}-${lesson_fb}.pdf`,
+        });
       }
 
       if (type === "V" && video) {
