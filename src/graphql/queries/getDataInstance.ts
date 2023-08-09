@@ -7,6 +7,7 @@ export const GET_DATA_INSTANCE = gql`
     ) {
       name
       course_fb
+      type
       lessons(
         where: {
           _or: [
@@ -25,6 +26,15 @@ export const GET_DATA_INSTANCE = gql`
         subtype
         video
         lesson_fb
+        questions {
+          id
+          question_fb
+          type
+          image_url
+          answer
+          text
+          options
+        }
         videoalter
         module {
           name

@@ -18,6 +18,7 @@ export const environments = {
   DATABASE_USER: process.env.DATABASE_USER || "",
   DATABASE_PASSWORD: process.env.DATABASE_PASSWORD || "",
   DATABASE_NAME: process.env.DATABASE_NAME || "",
+  VIMEO_ACCESS_TOKEN: process.env.VIMEO_ACCESS_TOKEN || "",
 };
 
 console.log({ env: process.env.NODE_ENV, environments });
