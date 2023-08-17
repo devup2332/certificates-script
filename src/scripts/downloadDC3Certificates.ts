@@ -8,19 +8,20 @@ import fs from "fs-extra";
 import moment from "moment";
 import axios from "axios";
 import { environments } from "../environments";
+import { normalizeName } from "../utils/normalizeString";
 
 export const downloadDC3CertificatesForAnInstance = async (
-  clientId: string
+  clientId: string,
 ) => {
-  const dateStart = new Date("2022-01-01T00:00:00.000Z");
-  const dateEnd = new Date();
+  const dateStart = new Date("2023-04-01T00:00:00.000Z");
+  const dateEnd = new Date("2023-07-31T00:00:00.000Z");
   const { user_course_cl } = await client.request(
     GET_USER_COURSES_DC3_PER_INSTANCE,
     {
       clientId,
       dateEnd,
       dateStart,
-    }
+    },
   );
   const approvedUsers = user_course_cl.filter((c: any) => {
     let approved;
@@ -86,10 +87,10 @@ export const downloadDC3CertificatesForAnInstance = async (
     } = approvedUsers[i];
 
     const tematicaName = stpsTematica?.stps_catalog.find(
-      (t: any) => t.code === course.dc3_data_json?.tematica
+      (t: any) => t.code === course.dc3_data_json?.tematica,
     );
     const ocupacionName = stps_catalog?.find(
-      (t: any) => t.code == user?.additional_info_json?.clave_ocupacion
+      (t: any) => t.code == user?.additional_info_json?.clave_ocupacion,
     );
     let stpsAgente = "";
 
@@ -157,28 +158,15 @@ export const downloadDC3CertificatesForAnInstance = async (
     const response = await axios.get(`https://server.lernit.app/${data}`, {
       responseType: "arraybuffer",
     });
-    const userFilePath = `${pathFolder}/${user.full_name
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .trimStart()
-      .replace("?", "-")
-      .replace("|", "-")
-      .trimEnd()
-      .replace(/\s/g, "-")
-      .replace(":", "")}-${user_fb}`;
+    const userFilePath = `${pathFolder}/${normalizeName(
+      user.full_name,
+    )}-${user_fb}`;
     if (!fs.existsSync(userFilePath)) {
       fs.mkdir(userFilePath);
     }
-    const filename = `/${course.name
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .trimStart()
-      .replace("?", "-")
-      .replace("|", "-")
-      .trimEnd()
-      .replace(/\s/g, "-")
-      .replace(":", "")}-${course_fb}.pdf`;
+    const filename = `/${normalizeName(course.name)}-${course_fb}.pdf`;
     const file = userFilePath + filename;
+    console.log({ file });
     await fs.writeFile(file, response.data);
   }
 };

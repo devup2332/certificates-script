@@ -22,7 +22,6 @@ export const GET_USER_COURSES_DC3_PER_INSTANCE = gql`
         completed_at: { _lte: $dateEnd, _gte: $dateStart }
         course: {
           client_id: { _eq: $clientId }
-          course_fb: { _eq: "o7TWeuFQREbrJDdWv36d" }
           dc3_data_json: { _is_null: false }
         }
       }

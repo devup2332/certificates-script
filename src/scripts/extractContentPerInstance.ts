@@ -22,8 +22,6 @@ export const extractContentPerInstance = async (clientId: string) => {
     .sheet_to_json(wb.Sheets[sheets[0]])
     .map((i: any) => ({ name: i["Nombre del Curso "] }));
   const coursesToDownload: any[] = [];
-  const forumTasks: any[] = [];
-  let counter = 0;
   data.forEach((c: any) => {
     const finded = courses.filter((i: any) => {
       return i.name.trimEnd() === c.name.trimEnd();
@@ -33,15 +31,9 @@ export const extractContentPerInstance = async (clientId: string) => {
     }
   });
 
-  const coursesNoScorm = coursesToDownload.filter((c: any) => {
-    const { lessons: l } = c;
-    const finded = l.filter((l: any) => l.type === "A");
-    return !finded.length;
-  });
-
   console.log("Data Ready");
-  for (let i = 0; i < coursesNoScorm.length; i++) {
-    const { lessons, name: courseName, course_fb } = coursesNoScorm[i];
+  for (let i = 0; i < coursesToDownload.length; i++) {
+    const { lessons, name: courseName, course_fb } = coursesToDownload[i];
     // console.log(`${i}.- ${courseName} - ${course_fb}`);
     const courseNameReady = normalizeName(courseName);
 
@@ -64,16 +56,19 @@ export const extractContentPerInstance = async (clientId: string) => {
 
     const w1 = xlsx.utils.book_new();
     const s1 = xlsx.utils.json_to_sheet(
-      acceptedLessons.map((l: any) => {
-        const { type, name, module, module_id, lesson_fb } = l;
-        return {
-          "Id de la leccion": lesson_fb,
-          "Id del modulo": module_id,
-          "Nombre de la leccion": name,
-          "Nombre del Modulo": module.name,
-          "Tipo de recurso": type,
-        };
-      }),
+      acceptedLessons
+        .map((l: any) => {
+          const { type, name, module, module_id, lesson_fb, index } = l;
+          return {
+            "Id de la leccion": lesson_fb,
+            "Id del modulo": module_id,
+            "Nombre de la leccion": name,
+            "Nombre del Modulo": module.name,
+            "Tipo de recurso": type,
+            Orden: index + 1,
+          };
+        })
+        .sort((a: any, b: any) => a.Orden - b.Orden),
     );
 
     xlsx.utils.book_append_sheet(w1, s1, "Recursos");
@@ -92,6 +87,7 @@ export const extractContentPerInstance = async (clientId: string) => {
         lesson_fb,
         questions,
         embed_json,
+        html,
       } = lesson;
 
       console.log(`${name} - ${lesson_fb}`);
@@ -100,7 +96,7 @@ export const extractContentPerInstance = async (clientId: string) => {
       const nameLessonReady = normalizeName(name || "Leccion sin nombre");
 
       const modulePath = `${courseFolderPath}/${nameModuleReady}-${module_id}`;
-      if (["L", "H", "E", "V", "S", "F", "T"].includes(type)) {
+      if (["L", "H", "E", "V", "S", "F", "T", "A"].includes(type)) {
         const modulePathExist = await fs.pathExists(modulePath);
 
         if (!modulePathExist) {
@@ -214,6 +210,23 @@ export const extractContentPerInstance = async (clientId: string) => {
           response.data,
         );
         console.log("Download End");
+      }
+
+      if (type === "A") {
+        const scormPathExist = await fs.pathExists(`${modulePath}/scorms`);
+        if (!scormPathExist) {
+          await fs.mkdir(`${modulePath}/scorms`);
+        }
+        const url = `${environments.SERVER_SCORMS_URL}/doc/${html.folderName}`;
+        console.log({ url });
+
+        const response = await axios.get(url);
+        console.log({ response });
+        await fs.writeFile(
+          `${modulePath}/scorms/scorm-${nameLessonReady}.html`,
+          response.data,
+        );
+        console.log("Scorm Ready");
       }
 
       if (type === "E") {

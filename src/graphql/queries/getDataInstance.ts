@@ -11,6 +11,7 @@ export const GET_DATA_INSTANCE = gql`
       lessons(
         where: {
           deleted_at: { _is_null: true }
+          type: { _eq: "A" }
           _or: [
             { stage: { _gte: 3 } }
             { stage: { _gte: 2 }, type: { _eq: "M" } }
@@ -21,6 +22,7 @@ export const GET_DATA_INSTANCE = gql`
         name
         html
         embed_json
+        index
         type
         image
         lecture

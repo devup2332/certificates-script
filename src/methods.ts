@@ -29,7 +29,7 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // generateExcel()
 // downloadDC3CertificatesForAnInstance("solintegra");
 // migrateCoursesToContentPerInstance("tecmilenio");
-// setAsInstructorPerInstance("universidadeacero")
+// setAsInstructorPerInstance("uinterceramic")
 // generateCoursesListPerInstance('universidadexecon')
 // insertNewCompetencies();
 // getReportCoursesNeo("centrovirtualfa")
@@ -37,4 +37,4 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // identifyUsersInOtherInstances()
 // assignMPCoursesToAnInstance("demo")
 // migrateRubrics();
-// extractContentPerInstance('rotoplas')
+extractContentPerInstance('rotoplas')
