@@ -32,6 +32,7 @@ export const extractContentPerInstance = async (clientId: string) => {
   });
 
   console.log("Data Ready");
+  let counter = 0;
   for (let i = 0; i < coursesToDownload.length; i++) {
     const { lessons, name: courseName, course_fb } = coursesToDownload[i];
     // console.log(`${i}.- ${courseName} - ${course_fb}`);
@@ -51,7 +52,7 @@ export const extractContentPerInstance = async (clientId: string) => {
     if (!lessons.length) console.log(`${courseName} - ${course_fb}`);
 
     const acceptedLessons = lessons.filter((l: any) => {
-      return ["L", "H", "E", "V", "S", "F", "T"].includes(l.type);
+      return ["L", "H", "E", "V", "S", "F", "T", "A"].includes(l.type);
     });
 
     const w1 = xlsx.utils.book_new();
@@ -74,7 +75,7 @@ export const extractContentPerInstance = async (clientId: string) => {
     xlsx.utils.book_append_sheet(w1, s1, "Recursos");
     await xlsx.writeFile(w1, `${courseFolderPath}/Resources-${course_fb}.xlsx`);
 
-    for (const lesson of lessons) {
+    for (const lesson of acceptedLessons) {
       const {
         type,
         subtype,
@@ -217,13 +218,11 @@ export const extractContentPerInstance = async (clientId: string) => {
         if (!scormPathExist) {
           await fs.mkdir(`${modulePath}/scorms`);
         }
-        const url = `${environments.SERVER_SCORMS_URL}/doc/${html.folderName}`;
-        console.log({ url });
+        const url = `${environments.SERVER_SCORMS_URL}/${html.folderName}`;
 
-        const response = await axios.get(url);
-        console.log({ response });
+        const response = await axios.get(url, { responseType: "arraybuffer" });
         await fs.writeFile(
-          `${modulePath}/scorms/scorm-${nameLessonReady}.html`,
+          `${modulePath}/scorms/scorm-${nameLessonReady}.zip`,
           response.data,
         );
         console.log("Scorm Ready");
@@ -400,6 +399,7 @@ export const extractContentPerInstance = async (clientId: string) => {
       }
     }
   }
+  console.log({ counter });
 
   // const coursesTypeScorm = xlsx.utils.json_to_sheet(
   //   coursesToDownload
