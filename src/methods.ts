@@ -12,6 +12,7 @@ import { identifyUsersInOtherInstances } from "./scripts/identifyUsersInOtherIns
 import { insertNewCompetencies } from "./scripts/insertNewCompetencies";
 import { migrateCoursesToContentPerInstance } from "./scripts/migrateCoursesToContentPerInstance";
 import { migrateRubrics } from "./scripts/migrateRubrics";
+import { removeInstructor } from "./scripts/removeInstructor";
 import { setAsInstructorPerInstance } from "./scripts/setAsInstructorPerInstance";
 import { syncUsers } from "./scripts/syncUsers";
 import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
@@ -29,7 +30,7 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // generateExcel()
 // downloadDC3CertificatesForAnInstance("solintegra");
 // migrateCoursesToContentPerInstance("tecmilenio");
-// setAsInstructorPerInstance("uinterceramic")
+// setAsInstructorPerInstance("uinterceramic");
 // generateCoursesListPerInstance('universidadexecon')
 // insertNewCompetencies();
 // getReportCoursesNeo("centrovirtualfa")
@@ -37,4 +38,5 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // identifyUsersInOtherInstances()
 // assignMPCoursesToAnInstance("demo")
 // migrateRubrics();
-extractContentPerInstance('rotoplas')
+// extractContentPerInstance('rotoplas')
+removeInstructor("uinterceramic");
