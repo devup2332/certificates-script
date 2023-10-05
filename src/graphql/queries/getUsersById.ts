@@ -5,6 +5,7 @@ export const GET_USER_BY_ID = gql`
     users: users_cl(where: { user_fb: { _in: $userIds } }) {
       user_fb
       email
+      image_url
       first_name
       full_name
       last_name

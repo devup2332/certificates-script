@@ -1,9 +1,8 @@
-import { assign100AllForumsAndTasksUsers } from "./scripts/assign100AllForumsAndTaskUsers";
-import { assignCoursesToUser } from "./scripts/assignCoursesToUsers";
 import { assignMPCoursesToAnInstance } from "./scripts/assignMPCoursesToAnInstance";
 import { deleteProgressLpsInstancePerCourse } from "./scripts/deleteProgressLpsInstancePerCourse";
 import { downloadCertificatesPerInstance } from "./scripts/donwloadCertificatesPerInstance";
 import { downloadDC3CertificatesForAnInstance } from "./scripts/downloadDC3Certificates";
+import { downloadEvaluationsPerInstance } from "./scripts/downloadEvaluationsPerInstance";
 import { extractContentPerInstance } from "./scripts/extractContentPerInstance";
 import { generateCoursesListPerInstance } from "./scripts/generateCoursesListPerInstance";
 import { getAllReviewsForAnInstance } from "./scripts/getAllReviewsForAnInstance";
@@ -13,6 +12,7 @@ import { insertNewCompetencies } from "./scripts/insertNewCompetencies";
 import { migrateCoursesToContentPerInstance } from "./scripts/migrateCoursesToContentPerInstance";
 import { migrateRubrics } from "./scripts/migrateRubrics";
 import { removeInstructor } from "./scripts/removeInstructor";
+import { replaceInstructorByOther } from "./scripts/replaceInstructorByOther";
 import { setAsInstructorPerInstance } from "./scripts/setAsInstructorPerInstance";
 import { syncUsers } from "./scripts/syncUsers";
 import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
@@ -26,10 +26,10 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // syncQuestionsForOneLesson()
 // syncUsers()
 // syncUsersByExcel();
-// downloadCertificatesPerInstance("azelis");
+// downloadCertificatesPerInstance("tetakawi");
 // generateExcel()
 // downloadDC3CertificatesForAnInstance("solintegra");
-// migrateCoursesToContentPerInstance("tecmilenio");
+migrateCoursesToContentPerInstance("tecmilenio");
 // setAsInstructorPerInstance("uinterceramic");
 // generateCoursesListPerInstance('universidadexecon')
 // insertNewCompetencies();
@@ -39,4 +39,12 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // assignMPCoursesToAnInstance("demo")
 // migrateRubrics();
 // extractContentPerInstance('rotoplas')
-removeInstructor("uinterceramic");
+
+// removeInstructor("uinterceramic");
+// replaceInstructorByOther(
+//   "azelis",
+//   "V5rPJQek4AdSWsmr7rMPel3yuBO2",
+//   "qIVhJSwm75ccKdWT48dyzE6FUCA2",
+//   "32tqVLQv9VfbKZAE8KjaVbG733W2",
+// );
+// downloadEvaluationsPerInstance("azelis");

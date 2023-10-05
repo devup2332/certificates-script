@@ -93,6 +93,7 @@ export const GET_USERS_COURSE_PER_INSTANCE = gql`
       where: {
         user: { client_id: { _eq: $clientId } }
         completed_at: { _lte: $dateEnd, _gte: $dateStart }
+        course_fb: { _eq: "OpxMrw7vsMnTc2xTb7FC" }
       }
     ) {
       created_at
