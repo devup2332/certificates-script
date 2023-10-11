@@ -1,10 +1,11 @@
 import { assignMPCoursesToAnInstance } from "./scripts/assignMPCoursesToAnInstance";
 import { deleteProgressLpsInstancePerCourse } from "./scripts/deleteProgressLpsInstancePerCourse";
-import { downloadCertificatesPerInstance } from "./scripts/donwloadCertificatesPerInstance";
+import { downloadCertificatesPerInstance } from "./scripts/downloadCertificatesPerInstance";
 import { downloadDC3CertificatesForAnInstance } from "./scripts/downloadDC3Certificates";
 import { downloadEvaluationsPerInstance } from "./scripts/downloadEvaluationsPerInstance";
 import { extractContentPerInstance } from "./scripts/extractContentPerInstance";
 import { generateCoursesListPerInstance } from "./scripts/generateCoursesListPerInstance";
+import { generateReportLpsPerInstance } from "./scripts/generateReportLpsPerInstance";
 import { getAllReviewsForAnInstance } from "./scripts/getAllReviewsForAnInstance";
 import { getReportCoursesNeo } from "./scripts/getReportCoursesNeo";
 import { identifyUsersInOtherInstances } from "./scripts/identifyUsersInOtherInstances";
@@ -14,6 +15,7 @@ import { migrateRubrics } from "./scripts/migrateRubrics";
 import { removeInstructor } from "./scripts/removeInstructor";
 import { replaceInstructorByOther } from "./scripts/replaceInstructorByOther";
 import { setAsInstructorPerInstance } from "./scripts/setAsInstructorPerInstance";
+import { syncCoursesTecMilenio } from "./scripts/syncCoursesTecmilenioInMP";
 import { syncUsers } from "./scripts/syncUsers";
 import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 
@@ -26,10 +28,7 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // syncQuestionsForOneLesson()
 // syncUsers()
 // syncUsersByExcel();
-// downloadCertificatesPerInstance("tetakawi");
 // generateExcel()
-// downloadDC3CertificatesForAnInstance("solintegra");
-migrateCoursesToContentPerInstance("tecmilenio");
 // setAsInstructorPerInstance("uinterceramic");
 // generateCoursesListPerInstance('universidadexecon')
 // insertNewCompetencies();
@@ -48,3 +47,9 @@ migrateCoursesToContentPerInstance("tecmilenio");
 //   "32tqVLQv9VfbKZAE8KjaVbG733W2",
 // );
 // downloadEvaluationsPerInstance("azelis");
+
+
+// downloadCertificatesPerInstance("mazda");
+// downloadDC3CertificatesForAnInstance()
+// migrateCoursesToContentPerInstance("tecmilenio");
+// syncCoursesTecMilenio('tecmilenio')
