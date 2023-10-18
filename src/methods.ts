@@ -3,6 +3,7 @@ import { deleteProgressLpsInstancePerCourse } from "./scripts/deleteProgressLpsI
 import { downloadCertificatesPerInstance } from "./scripts/downloadCertificatesPerInstance";
 import { downloadDC3CertificatesForAnInstance } from "./scripts/downloadDC3Certificates";
 import { downloadEvaluationsPerInstance } from "./scripts/downloadEvaluationsPerInstance";
+import { downloadProfilePicturesCloudinaryPerInstance } from "./scripts/downloadProfilePicturesCloudinaryPerInstance";
 import { extractContentPerInstance } from "./scripts/extractContentPerInstance";
 import { generateCoursesListPerInstance } from "./scripts/generateCoursesListPerInstance";
 import { generateReportLpsPerInstance } from "./scripts/generateReportLpsPerInstance";
@@ -38,6 +39,7 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // assignMPCoursesToAnInstance("demo")
 // migrateRubrics();
 // extractContentPerInstance('rotoplas')
+// downloadProfilePicturesCloudinaryPerInstance()
 
 // removeInstructor("uinterceramic");
 // replaceInstructorByOther(
