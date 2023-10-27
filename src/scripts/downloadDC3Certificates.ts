@@ -13,8 +13,8 @@ import { normalizeName } from "../utils/normalizeString";
 export const downloadDC3CertificatesForAnInstance = async (
   clientId: string,
 ) => {
-  const dateStart = new Date("2023-04-01T00:00:00.000Z");
-  const dateEnd = new Date("2023-07-31T00:00:00.000Z");
+  const dateStart = new Date("2023-09-27T00:00:00.000Z");
+  const dateEnd = new Date("2023-10-27T00:00:00.000Z");
   const { user_course_cl } = await client.request(
     GET_USER_COURSES_DC3_PER_INSTANCE,
     {

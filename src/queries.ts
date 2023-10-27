@@ -87,11 +87,11 @@ export const GET_USERS_COURSE_PER_INSTANCE = gql`
   query GET_USERS_COURSE_PER_INSTANCE(
     $clientId: String
     $dateStart: timestamptz
-    $dateEnd: timestamptz,
+    $dateEnd: timestamptz
   ) {
     user_course_cl(
       where: {
-        client_fb: {_eq: $clientId}
+        user: { client_id: { _eq: $clientId } }
         completed_at: { _lte: $dateEnd, _gte: $dateStart }
       }
     ) {

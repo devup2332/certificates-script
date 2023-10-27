@@ -49,7 +49,8 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // downloadEvaluationsPerInstance("azelis");
 
 
-// downloadCertificatesPerInstance("mazda");
-// downloadDC3CertificatesForAnInstance()
+// downloadCertificatesPerInstance("azelis");
+// downloadDC3CertificatesForAnInstance("azelis")
 // migrateCoursesToContentPerInstance("tecmilenio");
 // syncCoursesTecMilenio('tecmilenio')
+generateReportLpsPerInstance("mazda")

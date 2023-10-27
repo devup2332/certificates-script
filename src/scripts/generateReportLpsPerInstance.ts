@@ -4,8 +4,12 @@ import moment from "moment";
 import xlsx from "xlsx";
 
 export const generateReportLpsPerInstance = async (instance: string) => {
+  const dateStart = new Date("2023-10-01T00:00:00.000Z");
+  const dateEnd = new Date("2023-11-01T00:00:00.000Z");
   const { lps } = await client.request(GET_USERS_LP_INFO, {
     clientId: instance,
+    dateStart,
+    dateEnd,
   });
 
   const wb = xlsx.utils.book_new();
@@ -15,7 +19,6 @@ export const generateReportLpsPerInstance = async (instance: string) => {
       users_learning_path: users,
       name,
       courses_json,
-      learning_path_fb,
       percentage_to_pass,
     } = lp;
     const data: any[] = [];
@@ -70,7 +73,6 @@ export const generateReportLpsPerInstance = async (instance: string) => {
     }
     const ws = xlsx.utils.json_to_sheet(data);
     xlsx.utils.book_append_sheet(wb, ws, name.substring(0, 31));
-    if (learning_path_fb === "ZcNfJWP1KQiwkJy2w8du") console.log({ data });
   }
   xlsx.writeFile(wb, `./report-${instance}.xlsx`);
 };
