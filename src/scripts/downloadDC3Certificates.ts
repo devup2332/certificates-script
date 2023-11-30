@@ -5,7 +5,7 @@ import {
 } from "../queries";
 import xlsx from "xlsx";
 import fs from "fs-extra";
-import moment from "moment";
+import moment, { normalizeUnits } from "moment";
 import axios from "axios";
 import { environments } from "../environments";
 import { normalizeName } from "../utils/normalizeString";
@@ -13,8 +13,8 @@ import { normalizeName } from "../utils/normalizeString";
 export const downloadDC3CertificatesForAnInstance = async (
   clientId: string,
 ) => {
-  const dateStart = new Date("2023-09-27T00:00:00.000Z");
-  const dateEnd = new Date("2023-10-27T00:00:00.000Z");
+  const dateStart = new Date("2020-10-27T00:00:00.000Z");
+  const dateEnd = new Date("2023-11-27T00:00:00.000Z");
   const { user_course_cl } = await client.request(
     GET_USER_COURSES_DC3_PER_INSTANCE,
     {
@@ -144,29 +144,32 @@ export const downloadDC3CertificatesForAnInstance = async (
       ocupacion: ocupacionName?.description ?? user?.user_ou?.name,
       puesto: user.user_role.name,
       nombreEmpresa: user.client?.name,
-      courseName: course.name,
+      courseName: normalizeName(course.name),
       duration: course.duration,
       inicioCurso: created_at
         ? moment(created_at).format("YYYY-MM-DD")
         : moment(last_update).format("YYYY-MM-DD"),
       finCurso: fechaFinCurso,
     };
-
-    const { data } = await axios.get<string>(environments.CERT_DC3_SERVER, {
-      params: requestData,
-    });
-    const response = await axios.get(`https://server.lernit.app/${data}`, {
-      responseType: "arraybuffer",
-    });
-    const userFilePath = `${pathFolder}/${normalizeName(
-      user.full_name,
-    )}-${user_fb}`;
-    if (!fs.existsSync(userFilePath)) {
-      fs.mkdir(userFilePath);
+    try {
+      const { data } = await axios.get<string>(environments.CERT_DC3_SERVER, {
+        params: requestData,
+      });
+      const response = await axios.get(`https://server.lernit.app/${data}`, {
+        responseType: "arraybuffer",
+      });
+      const userFilePath = `${pathFolder}/${normalizeName(
+        user.full_name,
+      )}-${user_fb}`;
+      if (!fs.existsSync(userFilePath)) {
+        fs.mkdir(userFilePath);
+      }
+      const filename = `/${normalizeName(course.name)}-${course_fb}.pdf`;
+      const file = userFilePath + filename;
+      console.log({ file });
+      await fs.writeFile(file, response.data);
+    } catch (err) {
+      console.log({ err });
     }
-    const filename = `/${normalizeName(course.name)}-${course_fb}.pdf`;
-    const file = userFilePath + filename;
-    console.log({ file });
-    await fs.writeFile(file, response.data);
   }
 };

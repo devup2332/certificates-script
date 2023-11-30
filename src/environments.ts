@@ -20,6 +20,10 @@ export const environments = {
   DATABASE_NAME: process.env.DATABASE_NAME || "",
   VIMEO_ACCESS_TOKEN: process.env.VIMEO_ACCESS_TOKEN || "",
   SERVER_SCORMS_URL: process.env.SERVER_SCORMS_URL || "",
+  TOKENVOLDEMORT: process.env.TOKENVOLDEMORT || "",
+  VOLDEMORT_API: process.env.VOLDEMORT_API || "",
+  SECRET_WORD: process.env.SECRET_WORD || "",
+  CLOUDFUNCTIONS_URL: process.env.CLOUDFUNCTIONS_URL || "",
 };
 
 console.log({ env: process.env.NODE_ENV, environments });

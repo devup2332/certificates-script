@@ -28,36 +28,35 @@ export const syncCoursesTecMilenio = async (instance: string) => {
   let index = 0;
   const ids = coursesToCreate.map((c: any) => c.id);
 
-  await migrateCoursesToContentPerInstance("tecmilenio",ids);
+  await migrateCoursesToContentPerInstance("tecmilenio", ids);
 
+  for (const course of coursesToUpdate) {
+    const { name, id, ...allData } = course;
+    const f = coursesMP.filter((c: any) => c.name === name);
+    const { id: idC } = f[0];
 
-  //   for (const course of coursesToUpdate) {
-  //     const { name, id, ...allData } = course;
-  //     const f = coursesMP.filter((c: any) => c.name === name);
-  //     const { id: idC } = f[0];
+    console.log(
+      `${index}.- Updating course ${name} - Tec : ${id} , Content : ${idC}`,
+    );
+    delete allData.name;
+    delete allData.id;
+    delete allData.origin;
+    delete allData.client_id;
+    const newInfo = {
+      ...allData,
+    };
+    const response = await client.request(UPDATE_COURSE_INFO, {
+      courseId: idC,
+      newInfo,
+    });
+    console.log({ response });
+    index++;
+  }
 
-  //     console.log(
-  //       `${index}.- Updating course ${name} - Tec : ${id} , Content : ${idC}`
-  //     );
-  //     delete allData.name;
-  //     delete allData.id;
-  //     delete allData.origin;
-  //     delete allData.client_id;
-  //     const newInfo = {
-  //       ...allData,
-  //     };
-  //     const response = await client.request(UPDATE_COURSE_INFO, {
-  //       courseId: idC,
-  //       newInfo,
-  //     });
-  //     console.log({ response });
-  //     index++;
-  //   }
-
-  //   console.log({
-  //     coursesToUpdate: coursesToUpdate.length,
-  //     coursesToCreate: coursesToCreate.length,
-  //   });
+  console.log({
+    coursesToUpdate: coursesToUpdate.length,
+    coursesToCreate: coursesToCreate.length,
+  });
 
   console.log({ coursesMP: coursesMP.length, courses: courses.length });
 };
