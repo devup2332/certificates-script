@@ -10,24 +10,25 @@ import { makeid } from "../utils/makeId";
 
 export const migrateCoursesToContentPerInstance = async (
   clientId: string,
-  coursesToCreatedIds?: string[]
+  idCourses?: string[],
 ) => {
   const coursesIds: any[] = [
-    // "SsbNp5l27pLDN0zHZ2d0",
-    // "QNYglFgnhFVk0PLOHy5K",
-    // "luAyGhyZGgc7Lr0End5H",
-    // "U8SvoYwjFyviJ37KG7J0",
-    // "ul2Qf6QJ00B0nUql9z84",
+    "zE9IevNrOws69El1fBFI",
+    "3uRvWpmCROQXz3GPXKjM",
+    "xMdVmwP9H2mK0Dkd5wfS",
+    "TyDZFkfaL3fnyO5A3m0c",
   ];
+
   const courses = await knexClient
     .select(CourseFields)
     .from("courses_cl")
-    .whereIn("course_fb", coursesToCreatedIds || coursesIds)
+    .whereIn("course_fb", idCourses || coursesIds)
     .where("client_id", "=", clientId)
-    .where("stage", ">", "7");
+    .where("is_deleted", "=", false)
+    .where("stage", ">=", "7");
 
   console.log({
-    courses: courses.length,
+    coursesToMigrate: courses.length,
   });
   for (const course of courses) {
     const { course_fb, name, type } = course;
@@ -91,7 +92,7 @@ export const migrateCoursesToContentPerInstance = async (
       if (type === "SM") {
         console.log(`Course type SM ${name}`);
         const newWeeks = weeks?.filter(
-          (w: any) => w.module_fb === module.module_fb
+          (w: any) => w.module_fb === module.module_fb,
         );
         for (const week of newWeeks) {
           const newWeekId = makeid();
@@ -112,7 +113,7 @@ export const migrateCoursesToContentPerInstance = async (
           await knexClient.into("weeks_tb").insert(weekData);
 
           const newActivities = activities.filter(
-            (act: any) => act.week_fb === week.week_fb
+            (act: any) => act.week_fb === week.week_fb,
           );
 
           for (const activity of newActivities) {
@@ -134,7 +135,7 @@ export const migrateCoursesToContentPerInstance = async (
 
             await knexClient.into("activity_tb").insert(newActivity);
             const newLessons = lessons.filter(
-              (l: any) => l.activity_id === activity.activity_fb
+              (l: any) => l.activity_id === activity.activity_fb,
             );
             newLessons.forEach((nl: any) => {
               lessonsArray.push({
@@ -148,7 +149,7 @@ export const migrateCoursesToContentPerInstance = async (
         }
       } else {
         const filteredLessons = lessons.filter(
-          (l: any) => l.module_id === module.module_fb
+          (l: any) => l.module_id === module.module_fb,
         );
         filteredLessons.forEach((l: any) => {
           lessonsArray.push({

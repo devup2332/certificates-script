@@ -4,8 +4,8 @@ import xlsx from "xlsx";
 import moment from "moment";
 
 export const getAllReviewsForAnInstance = async (clientId: string) => {
-  const dateStart = new Date("2023-06-01T00:00:00.000Z");
-  const dateEnd = new Date("2023-06-30T00:00:00.000Z");
+  const dateStart = new Date("2018-06-01T00:00:00.000Z");
+  const dateEnd = new Date("2023-10-27T00:00:00.000Z");
   console.log({ dateStart, dateEnd, clientId });
   const { courses_cl, marketplace_data_tb } = await client.request(
     GET_ALL_REVIEWS_FOR_AN_INSTANCE,

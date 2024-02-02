@@ -1,14 +1,21 @@
 import { gql } from "graphql-request";
 
 export const GET_USERS_LP_INFO = gql`
-  query GET_USERS_LP_INFO($clientId: String) {
+  query GET_USERS_LP_INFO(
+    $clientId: String
+    $dateStart: timestamptz
+    $dateEnd: timestamptz
+  ) {
     lps: learning_paths_cl(where: { client_id: { _eq: $clientId } }) {
       name
       learning_path_fb
       courses_json
       percentage_to_pass
       users_learning_path(
-        where: { user_learningpath: { deleted: { _eq: false } } }
+        where: {
+          created_at: { _lte: $dateEnd, _gte: $dateStart }
+          user_learningpath: { deleted: { _eq: false } }
+        }
       ) {
         end_date
         created_at

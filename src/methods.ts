@@ -1,4 +1,5 @@
 import { assignMPCoursesToAnInstance } from "./scripts/assignMPCoursesToAnInstance";
+import { bulkUploadOfCourses } from "./scripts/coursesBulkUpload";
 import { deleteProgressLpsInstancePerCourse } from "./scripts/deleteProgressLpsInstancePerCourse";
 import { downloadCertificatesPerInstance } from "./scripts/downloadCertificatesPerInstance";
 import { downloadDC3CertificatesForAnInstance } from "./scripts/downloadDC3Certificates";
@@ -16,9 +17,11 @@ import { migrateRubrics } from "./scripts/migrateRubrics";
 import { removeInstructor } from "./scripts/removeInstructor";
 import { replaceInstructorByOther } from "./scripts/replaceInstructorByOther";
 import { setAsInstructorPerInstance } from "./scripts/setAsInstructorPerInstance";
+import { syncCoursesByExcelV2 } from "./scripts/syncCoursesByExcelV2";
 import { syncCoursesTecMilenio } from "./scripts/syncCoursesTecmilenioInMP";
 import { syncUsers } from "./scripts/syncUsers";
 import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
+import { syncUsersByExcelV2 } from "./scripts/syncUsersByExcelV2";
 
 // generateExcelWithLogsPerInstance()
 // getAllReviewsForAnInstance('mazda')
@@ -36,7 +39,7 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 // getReportCoursesNeo("centrovirtualfa")
 // assignCoursesToUser("tecmilenio");
 // identifyUsersInOtherInstances()
-// assignMPCoursesToAnInstance("demo")
+// assignMPCoursesToAnInstance("autocluster")
 // migrateRubrics();
 // extractContentPerInstance('rotoplas')
 // downloadProfilePicturesCloudinaryPerInstance()
@@ -48,10 +51,13 @@ import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 //   "qIVhJSwm75ccKdWT48dyzE6FUCA2",
 //   "32tqVLQv9VfbKZAE8KjaVbG733W2",
 // );
-// downloadEvaluationsPerInstance("azelis");
+downloadEvaluationsPerInstance("azelis");
 
-
-// downloadCertificatesPerInstance("mazda");
-// downloadDC3CertificatesForAnInstance()
+// downloadCertificatesPerInstance("azelis");
+// downloadDC3CertificatesForAnInstance("azelis")
 // migrateCoursesToContentPerInstance("tecmilenio");
 // syncCoursesTecMilenio('tecmilenio')
+// generateReportLpsPerInstance("mazda")
+// bulkUploadOfCourses("content")
+// syncUsersByExcelV2("gonher");
+// syncCoursesByExcelV2()

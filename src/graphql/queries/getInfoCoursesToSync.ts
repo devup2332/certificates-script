@@ -62,7 +62,7 @@ export const GET_INFO_COURSES_MP_TO_SYNC = gql`
     coursesMP: courses_cl(
       where: {
         client_id: { _eq: "content" }
-        origin: { _eq: $clientId }
+        origin: { _eq: "tecmilenio" }
         type: { _eq: "OL" }
         stage: { _gte: 7 }
         is_deleted: { _eq: false }

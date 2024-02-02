@@ -1,84 +1,59 @@
 import { client } from "../graphql/client";
-import { GET_MP_COURSES } from "../graphql/queries/getMPCourses";
-import { GET_OUS_PER_INSTANCE } from "../graphql/queries/getOusPerInstance";
-import { GET_ROLES_PER_CLIENT } from "../graphql/queries/getRolesPerClient";
-import { v4 as uuid } from "uuid";
-import { MIGRATE_TOPICS_TO_INSTANCE } from "../graphql/mutations/migrateTopicsToInstance";
+import { GET_MP_COURSES_WITH_CUSTOM_VARIABLES } from "../graphql/queries/getMPCourses";
 import { INSERT_COURSE_MP_TO_AN_INTANCE } from "../graphql/mutations/insertCourseMPToAnInstance";
-import { GET_TOPICS_INSTANCE } from "../graphql/queries/getTopicsInstance";
 
 export const assignMPCoursesToAnInstance = async (clientId: string) => {
-  const { courses, topics, topicsClientId } = await client.request(
-    GET_MP_COURSES,
-    {
-      clientId,
+  const coursesIds: string[] = [
+    "LtWLI72xS7uDB4EhtaUt",
+    "pBBp0DpnEzWZHc0oOVTp",
+    "RKTaAQ073UkU1BhygwBK",
+    "o1P7QTLwAbCPKoAluvX5",
+  ];
+  let variables: any = {
+    whereVariables: {
+      client_id: { _eq: "content" },
     },
-  );
-  const { roles } = await client.request(GET_ROLES_PER_CLIENT, {
-    clientId,
-  });
-  const { ous } = await client.request(GET_OUS_PER_INSTANCE, {
-    clientId,
-  });
+  };
 
-  const newTopics: any[] = [];
-
-  topics.forEach((t: any) => {
-    const id = uuid();
-    const { name, image_url } = t;
-    const topic = {
-      image_url,
-      name,
-      client_id: clientId,
-      topic_fb: id,
+  if (coursesIds.length) {
+    variables = {
+      whereVariables: {
+        course_fb: { _in: coursesIds },
+      },
     };
-    newTopics.push(topic);
-  });
+  }
+  const { courses } = await client.request(
+    GET_MP_COURSES_WITH_CUSTOM_VARIABLES,
+    variables,
+  );
+  let index = 1;
 
-  // const { insert_topic_cl } = await client.request(MIGRATE_TOPICS_TO_INSTANCE, {
-  //   topics: newTopics,
-  // });
-  //
-  // console.log("TOPICS INSERTADOS");
-  //
-  const { topicsInstance } = await client.request(GET_TOPICS_INSTANCE, {
-    clientId,
-  });
-
+  console.log(`Courses to migrate are : ${courses.length}`);
+  return;
   for (const course of courses) {
-    const { course_fb, min_score, min_progress, welcome_message, topic } =
-      course;
-    const roles_json = roles.map((r: any) => r.role_fb);
-    const ous_json = ous.map((ou: any) => ou.ou_fb);
-    const topicF = topicsInstance.filter((t: any) => {
-      return t.name === topic.name;
-    });
-    // console.log({ topicF });
+    const { course_fb, name, welcome_message } = course;
     const object = {
       client_fb: clientId,
       course_fb,
       available_in_client: true,
-      roles_json,
+      roles_json: [],
+      ous_json: [],
       lesson_privacy: false,
-      min_progress: min_progress || 0,
-      min_score: min_score || 0,
-      ous_json,
-      privacity: "public",
-      topic_id: topicF[0].topic_fb,
+      min_progress: 100,
+      min_score: 80,
+      privacity: "private",
+      topic_id: "025a2913-5eaf-4e1d-9006-b2b765f14f05",
       welcome_message: welcome_message || "",
       competencies_levels: [],
       restart_time: 0,
       available_dc3_marketplace: false,
     };
-    // console.log({ object });
 
-    const response = await client.request(INSERT_COURSE_MP_TO_AN_INTANCE, {
+    await client.request(INSERT_COURSE_MP_TO_AN_INTANCE, {
       object,
     });
 
-    console.log("CURSO INSERTADO", { response });
-
-    // console.log({ object });
+    console.log(`#${index} Course Inserted ${name}`);
+    index++;
   }
-  // console.log({ courses: courses.length, clientId, topics });
 };

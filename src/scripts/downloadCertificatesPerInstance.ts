@@ -11,11 +11,11 @@ import fs from "fs-extra";
 
 export const downloadCertificatesPerInstance = async (clientId: string) => {
   try {
-    const dateStart = new Date("2020-06-01T00:00:00.000Z");
-    const dateEnd = new Date("2023-09-27T00:00:00.000Z");
+    const dateStart = new Date("2023-10-27T00:00:00.000Z");
+    const dateEnd = new Date("2023-11-27T00:00:00.000Z");
     const { user_course_cl } = await client.request(
       GET_USERS_COURSE_PER_INSTANCE,
-      { dateStart, dateEnd, clientId }
+      { dateStart, dateEnd, clientId },
     );
     const usersApproved = user_course_cl.filter((c: any) => {
       let approved;
@@ -59,10 +59,9 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
     });
     const pathFolder = path.resolve(
       __dirname,
-      `../../certificates/${clientId}/`
+      `../../certificates/${clientId}/`,
     );
     const exist = await fs.pathExists(pathFolder);
-    console.log({ exist, pathFolder });
     if (!exist) {
       await fs.mkdirs(pathFolder);
     }
@@ -86,7 +85,7 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
         };
         const searchParams = new URLSearchParams(params);
         const { data } = await axios.get(
-          `${environments.CERT_SERVER_URL}${environments.CERT_LWL_PDF}?${searchParams}`
+          `${environments.CERT_SERVER_URL}${environments.CERT_LWL_PDF}?${searchParams}`,
         );
         response = data;
       } else {
@@ -99,7 +98,7 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
         };
         const searchParams = new URLSearchParams(params);
         const { data } = await axios.get(
-          `${environments.CERT_SERVER_URL}${environments.CERT_SERVER_ENDPOINT}?${searchParams}`
+          `${environments.CERT_SERVER_URL}${environments.CERT_SERVER_ENDPOINT}?${searchParams}`,
         );
         response = data;
       }
@@ -107,7 +106,7 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
         `${environments.CERT_SERVER_URL}/${response}`,
         {
           responseType: "arraybuffer",
-        }
+        },
       );
 
       const userFilePath = `${pathFolder}/${user.full_name
