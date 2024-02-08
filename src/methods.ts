@@ -1,5 +1,6 @@
 import { assignMPCoursesToAnInstance } from "./scripts/assignMPCoursesToAnInstance";
 import { bulkUploadOfCourses } from "./scripts/coursesBulkUpload";
+import { checkInformationOfExcel } from "./scripts/deleteAndReleaseUsers";
 import { deleteProgressLpsInstancePerCourse } from "./scripts/deleteProgressLpsInstancePerCourse";
 import { downloadCertificatesPerInstance } from "./scripts/downloadCertificatesPerInstance";
 import { downloadDC3CertificatesForAnInstance } from "./scripts/downloadDC3Certificates";
@@ -51,7 +52,7 @@ import { syncUsersByExcelV2 } from "./scripts/syncUsersByExcelV2";
 //   "qIVhJSwm75ccKdWT48dyzE6FUCA2",
 //   "32tqVLQv9VfbKZAE8KjaVbG733W2",
 // );
-downloadEvaluationsPerInstance("azelis");
+// downloadEvaluationsPerInstance("azelis");
 
 // downloadCertificatesPerInstance("azelis");
 // downloadDC3CertificatesForAnInstance("azelis")
@@ -61,3 +62,4 @@ downloadEvaluationsPerInstance("azelis");
 // bulkUploadOfCourses("content")
 // syncUsersByExcelV2("gonher");
 // syncCoursesByExcelV2()
+// checkInformationOfExcel();
