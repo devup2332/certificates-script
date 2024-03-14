@@ -1,4 +1,6 @@
 import { assignMPCoursesToAnInstance } from "./scripts/assignMPCoursesToAnInstance";
+import { searchEmailInFiles } from "./scripts/checkJsonFilesInADirectory";
+import { readExcelColumnAndConvertToArray } from "./scripts/convertExcelColumnInArray";
 import { bulkUploadOfCourses } from "./scripts/coursesBulkUpload";
 import { checkInformationOfExcel } from "./scripts/deleteAndReleaseUsers";
 import { deleteProgressLpsInstancePerCourse } from "./scripts/deleteProgressLpsInstancePerCourse";
@@ -45,6 +47,8 @@ import { syncUsersByExcelV2 } from "./scripts/syncUsersByExcelV2";
 // extractContentPerInstance('rotoplas')
 // downloadProfilePicturesCloudinaryPerInstance()
 
+// Directorio donde se encuentran los archivos JSON
+// searchEmailInFiles(directoryPath, emailToFind);
 // removeInstructor("uinterceramic");
 // replaceInstructorByOther(
 //   "azelis",
@@ -53,6 +57,7 @@ import { syncUsersByExcelV2 } from "./scripts/syncUsersByExcelV2";
 //   "32tqVLQv9VfbKZAE8KjaVbG733W2",
 // );
 // downloadEvaluationsPerInstance("azelis");
+// readExcelColumnAndConvertToArray()
 
 // downloadCertificatesPerInstance("azelis");
 // downloadDC3CertificatesForAnInstance("azelis")
