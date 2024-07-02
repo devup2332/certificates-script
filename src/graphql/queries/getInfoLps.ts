@@ -43,3 +43,13 @@ export const GET_USERS_LP_INFO = gql`
     }
   }
 `;
+
+export const GET_ALL_LPS_BY_CLIENT = gql`
+  query getLpsByClient ($clientId: String!) {
+    learning_paths_cl(where: {client_id: {_eq: $clientId}}) {
+      client_id
+      name
+      learning_path_fb
+    }
+  }
+`;

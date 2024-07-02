@@ -25,3 +25,30 @@ export const GET_USER_BY_EMAIL = gql`
     }
   }
 `;
+
+
+export const GET_USERS_BY_CLIENT = gql`
+  query GET_USER_BY_EMAIL_AND_CLIENT( $clientId: String) {
+    users: users_cl(where: { client_id: { _eq: $clientId }, deleted: { _eq: false } }) {
+      id
+      email
+      user_fb
+      full_name
+      first_name
+      last_name
+    }
+  }
+`;
+
+export const GET_DELETED_USERS_BY_CLIENT = gql`
+  query GET_USER_BY_EMAIL_AND_CLIENT( $clientId: String) {
+    users: users_cl(where: { client_id: { _eq: $clientId }, deleted: { _eq: true } }) {
+      id
+      email
+      user_fb
+      full_name
+      first_name
+      last_name
+    }
+  }
+`;

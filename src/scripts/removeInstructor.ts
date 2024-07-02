@@ -1,7 +1,7 @@
 import { client } from "../graphql/client";
 import xlsx from "xlsx";
 import { GET_COURSES_INSTRUCTOR_INFO } from "../graphql/queries/getCoursesInstructor";
-import { knexClient } from "../database/knex";
+import { knexLXP } from "../database/knex";
 
 export const removeInstructor = async (clientId: string) => {
   const ids = ["0CYBB2xpgTX2FNmoQ06bKjuHQCC2"];
@@ -25,7 +25,7 @@ export const removeInstructor = async (clientId: string) => {
           (i: string) => i !== ids[0]
         );
         const noRepeted = [...new Set(newInstructors)];
-        await knexClient("courses_cl")
+        await knexLXP("courses_cl")
           .where("course_fb", "=", course_fb)
           .where("client_id", "=", clientId)
           .update({

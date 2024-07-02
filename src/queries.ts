@@ -57,6 +57,8 @@ export const GET_USER_COURSES_DC3_PER_INSTANCE = gql`
           instructor {
             full_name
           }
+          boss_name_workers_signature
+          boss_name_signature
         }
         user_ou {
           name
@@ -82,6 +84,7 @@ export const GET_USER_COURSES_DC3_PER_INSTANCE = gql`
         created_by: created_by_json
         type
         dc3_data_json
+        instructor_signature_dc3
       }
     }
   }

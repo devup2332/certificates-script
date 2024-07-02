@@ -2,7 +2,7 @@ import axios from 'axios';
 import xlsx from 'xlsx';
 
 
-const excelFile = 'C:/Users/rolis/Documents/uconstrurama-eliminar.xlsx'
+const excelFile = 'usuarios-a-liberar.xlsx'
 
 interface ExcelData {
     email: string,

@@ -7,8 +7,8 @@ import fs from "fs-extra";
 import { normalizeName } from "../utils/normalizeString";
 
 export const downloadEvaluationsPerInstance = async (instance: string) => {
-  const startDate = new Date("2023-10-27T00:00:00.000Z");
-  const endDate = new Date("2023-11-27T00:00:00.000Z");
+  const startDate = new Date("2024-05-01T00:00:00.000Z");
+  const endDate = new Date("2024-05-31T00:00:00.000Z");
   const { lessons } = await client.request(GET_COURSES_POSTS_INFO, {
     clientId: instance,
     startDate,

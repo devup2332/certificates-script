@@ -3,6 +3,7 @@ import { searchEmailInFiles } from "./scripts/checkJsonFilesInADirectory";
 import { readExcelColumnAndConvertToArray } from "./scripts/convertExcelColumnInArray";
 import { bulkUploadOfCourses } from "./scripts/coursesBulkUpload";
 import { checkInformationOfExcel } from "./scripts/deleteAndReleaseUsers";
+import { deleteCoursesAndProgressInUsers } from "./scripts/deleteCoursesAndProgressInUsers";
 import { deleteProgressLpsInstancePerCourse } from "./scripts/deleteProgressLpsInstancePerCourse";
 import { downloadCertificatesPerInstance } from "./scripts/downloadCertificatesPerInstance";
 import { downloadDC3CertificatesForAnInstance } from "./scripts/downloadDC3Certificates";
@@ -25,6 +26,8 @@ import { syncCoursesTecMilenio } from "./scripts/syncCoursesTecmilenioInMP";
 import { syncUsers } from "./scripts/syncUsers";
 import { syncUsersByExcel } from "./scripts/syncUsersByExcel";
 import { syncUsersByExcelV2 } from "./scripts/syncUsersByExcelV2";
+import { fixUsersAndFirebaseInVDM } from "./scripts/fixUsersAndFirebaseInVDM";
+import { reviveUsers } from "./scripts/reviveUsers";
 
 // generateExcelWithLogsPerInstance()
 // getAllReviewsForAnInstance('mazda')
@@ -44,7 +47,7 @@ import { syncUsersByExcelV2 } from "./scripts/syncUsersByExcelV2";
 // identifyUsersInOtherInstances()
 // assignMPCoursesToAnInstance("autocluster")
 // migrateRubrics();
-// extractContentPerInstance('rotoplas')
+ // extractContentPerInstance('sephorauniversitymx')
 // downloadProfilePicturesCloudinaryPerInstance()
 
 // Directorio donde se encuentran los archivos JSON
@@ -60,7 +63,7 @@ import { syncUsersByExcelV2 } from "./scripts/syncUsersByExcelV2";
 // readExcelColumnAndConvertToArray()
 
 // downloadCertificatesPerInstance("azelis");
-// downloadDC3CertificatesForAnInstance("azelis")
+// downloadDC3CertificatesForAnInstance("campusbid")
 // migrateCoursesToContentPerInstance("tecmilenio");
 // syncCoursesTecMilenio('tecmilenio')
 // generateReportLpsPerInstance("mazda")
@@ -68,3 +71,9 @@ import { syncUsersByExcelV2 } from "./scripts/syncUsersByExcelV2";
 // syncUsersByExcelV2("gonher");
 // syncCoursesByExcelV2()
 // checkInformationOfExcel();
+
+// deleteCoursesAndProgressInUsers('uconstrurama')
+
+// fixUsersAndFirebaseInVDM()
+
+// reviveUsers('semperaltius')

@@ -25,7 +25,7 @@ export const extractContentPerInstance = async (clientId: string) => {
   const sheets = wb.SheetNames;
   const data = xlsx.utils
     .sheet_to_json(wb.Sheets[sheets[0]])
-    .map((i: any) => ({ name: i["Nombre del Curso "] }));
+    .map((i: any) => ({ name: i["Nombre del Curso"] }));
   const coursesToDownload: ICourse[] = [];
   data.forEach((c: any) => {
     const finded = courses.filter((i: any) => {

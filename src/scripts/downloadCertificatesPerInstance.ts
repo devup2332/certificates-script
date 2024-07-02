@@ -11,8 +11,8 @@ import fs from "fs-extra";
 
 export const downloadCertificatesPerInstance = async (clientId: string) => {
   try {
-    const dateStart = new Date("2023-10-27T00:00:00.000Z");
-    const dateEnd = new Date("2023-11-27T00:00:00.000Z");
+    const dateStart = new Date("2024-05-01T00:00:00.000Z");
+    const dateEnd = new Date("2024-05-31T00:00:00.000Z");
     const { user_course_cl } = await client.request(
       GET_USERS_COURSE_PER_INSTANCE,
       { dateStart, dateEnd, clientId },
@@ -70,6 +70,7 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
       const { user, course, completed_at, user_fb, course_fb } =
         usersApproved[i];
       let response;
+
       if (course.client_id === "content") {
         console.log("Content");
         const params = {
@@ -83,11 +84,18 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
           duration: course.duration + " hrs",
           modules: course.modules.length,
         };
+        try {
         const searchParams = new URLSearchParams(params);
         const { data } = await axios.get(
           `${environments.CERT_SERVER_URL}${environments.CERT_LWL_PDF}?${searchParams}`,
         );
         response = data;
+        } catch (err) {
+          console.log('Err en cert content -->', err)
+        }
+
+        // await new Promise(resolve => setTimeout(resolve, 400));
+      
       } else {
         console.log("Normal");
         const params = {
@@ -96,12 +104,18 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
           courseName: course.name,
           date: moment(new Date(completed_at)).format("YYYY-MM-DD"),
         };
+        try{
         const searchParams = new URLSearchParams(params);
         const { data } = await axios.get(
           `${environments.CERT_SERVER_URL}${environments.CERT_SERVER_ENDPOINT}?${searchParams}`,
         );
         response = data;
+        } catch (err) {
+          console.log('Err en cert normal -->', err)
+        }
+          // await new Promise(resolve => setTimeout(resolve, 400));
       }
+      try {
       const certificate = await axios.get(
         `${environments.CERT_SERVER_URL}/${response}`,
         {
@@ -121,6 +135,7 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
       if (!fs.existsSync(userFilePath)) {
         await fs.mkdir(userFilePath);
       }
+
       const filename = `/${course.name
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -131,6 +146,10 @@ export const downloadCertificatesPerInstance = async (clientId: string) => {
         .replace(/\s/g, "-")
         .replace(":", "")}-${course_fb}.pdf`;
       await fs.writeFile(userFilePath + filename, certificate.data);
+    } catch (err) {
+      console.log('Erroooor -->', err)
+    }
+     
     }
     console.log({ certs: usersApproved.length, clientId });
   } catch (err) {

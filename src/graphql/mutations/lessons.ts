@@ -10,3 +10,12 @@ export const UPDATE_USER_LESSONS = gql`
     }
   }
 `;
+
+
+export const DELETE_USER_LESSONS = gql`
+  mutation deleteUserLessons($userId: String!, $courseId: String!) {
+    delete_users_lessons_cl(where: {user_fb: {_eq: $userId}, course_id: {_eq: $courseId}}) {
+      affected_rows
+    }
+  }
+`

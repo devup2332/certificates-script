@@ -1,14 +1,21 @@
-import admin, { ServiceAccount } from "firebase-admin";
+import { ServiceAccount } from "firebase-admin";
+import * as admin from "firebase-admin";
 import credentials from "./serviceAccount.json";
 
-export class Firebase {
+class Firebase {
   admin: admin.app.App;
   constructor() {
-    this.admin = admin.initializeApp({
-      credential: admin.credential.cert(credentials as ServiceAccount),
-    });
+    if (!admin.apps.length) {
+      this.admin = admin.initializeApp({
+        credential: admin.credential.cert(credentials as ServiceAccount),
+      });
+    } else {
+      this.admin = admin.app();
+    }
   }
 }
+const firebaseInstance = new Firebase();
+export { firebaseInstance };
 
 export const getRubrics = async () => {
   const response = await new Firebase().admin
@@ -22,3 +29,5 @@ export const getRubrics = async () => {
   });
   return list;
 };
+
+export default firebaseInstance.admin;

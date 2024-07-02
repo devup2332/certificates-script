@@ -22,3 +22,19 @@ export const RESET_USER_COURSE_STATUS = gql`
     }
   }
 `;
+
+export const DELETE_USER_COURSE = gql`
+  mutation deleteUserCourse($courseId: String!, $userId: String!) {
+    delete_user_course_cl(where: {course_fb: {_eq: $courseId}, user_fb: {_eq: $userId}}) {
+      affected_rows
+    }
+  }
+`
+
+export const DELETE_USER_LEARNING_PATH = gql`
+  mutation deleteUserLearningPath($clientId: String!, $lpId: String!, $userId: String!) {
+    delete_users_learning_paths_tb(where: {client_fb: {_eq: $clientId}, learning_path_fb: {_eq: $lpId}, user_fb: {_eq: $userId}}) {
+      affected_rows
+    }
+  }
+`

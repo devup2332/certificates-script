@@ -1,10 +1,10 @@
-import { knexClient } from "../database/knex";
+import { knexLXP } from "../database/knex";
 import { sleep } from "../utils/sleep";
 
 export const setAsInstructorPerInstance = async (clientId: string) => {
   const ids = ["0CYBB2xpgTX2FNmoQ06bKjuHQCC2"];
 
-  const response = await knexClient
+  const response = await knexLXP
     .select("instructors_json", "course_fb", "name", "client_id", "is_deleted")
     .from("courses_cl")
     .where("client_id", "=", clientId)
@@ -22,7 +22,7 @@ export const setAsInstructorPerInstance = async (clientId: string) => {
       try {
         const instructors = [...instructors_json, ...ids];
         const noRepeted = [...new Set(instructors)];
-        await knexClient("courses_cl")
+        await knexLXP("courses_cl")
           .where("course_fb", "=", course_fb)
           .update({
             instructors_json: JSON.stringify(noRepeted),

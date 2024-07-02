@@ -1,4 +1,4 @@
-import { knexClient } from "../database/knex";
+import { knexLXP } from "../database/knex";
 import {
   ActivitiesFields,
   CourseFields,
@@ -19,7 +19,7 @@ export const migrateCoursesToContentPerInstance = async (
     "TyDZFkfaL3fnyO5A3m0c",
   ];
 
-  const courses = await knexClient
+  const courses = await knexLXP
     .select(CourseFields)
     .from("courses_cl")
     .whereIn("course_fb", idCourses || coursesIds)
@@ -46,30 +46,30 @@ export const migrateCoursesToContentPerInstance = async (
         courseWithNewId[key] = p;
       }
     }
-    const modules = await knexClient
+    const modules = await knexLXP
       .select(ModulesFields)
       .from("module_cl")
       .where("course_fb", "=", course_fb);
 
-    const lessons = await knexClient
+    const lessons = await knexLXP
       .select(LessonsFields)
       .from("lessons_cl")
       .where("course_fb", course_fb)
       .whereNotNull("stage")
       .whereNull("deleted_at");
 
-    const activities = await knexClient
+    const activities = await knexLXP
       .select(ActivitiesFields)
       .from("activity_tb")
       .where("course_fb", course_fb);
 
-    const weeks = await knexClient
+    const weeks = await knexLXP
       .from("weeks_tb")
       .where("course_fb", course_fb)
       .whereNull("deleted_at");
 
     const lessonsArray: any[] = [];
-    await knexClient.into("courses_cl").insert(courseWithNewId);
+    await knexLXP.into("courses_cl").insert(courseWithNewId);
 
     console.log("Curso creado : " + name + " en Market Place");
     for (const module of modules) {
@@ -87,7 +87,7 @@ export const migrateCoursesToContentPerInstance = async (
         }
       }
 
-      await knexClient.into("module_cl").insert(moduleData);
+      await knexLXP.into("module_cl").insert(moduleData);
 
       if (type === "SM") {
         console.log(`Course type SM ${name}`);
@@ -110,7 +110,7 @@ export const migrateCoursesToContentPerInstance = async (
             }
           }
 
-          await knexClient.into("weeks_tb").insert(weekData);
+          await knexLXP.into("weeks_tb").insert(weekData);
 
           const newActivities = activities.filter(
             (act: any) => act.week_fb === week.week_fb,
@@ -133,7 +133,7 @@ export const migrateCoursesToContentPerInstance = async (
               }
             }
 
-            await knexClient.into("activity_tb").insert(newActivity);
+            await knexLXP.into("activity_tb").insert(newActivity);
             const newLessons = lessons.filter(
               (l: any) => l.activity_id === activity.activity_fb,
             );
@@ -164,7 +164,7 @@ export const migrateCoursesToContentPerInstance = async (
     for (const lesson of lessonsArray) {
       const data = { ...lesson };
       const questions =
-        (await knexClient
+        (await knexLXP
           .select(QuestionsFields)
           .from("lesson_questions_tb")
           .where("lesson_fb", lesson.lesson_fb)) || [];
@@ -180,7 +180,7 @@ export const migrateCoursesToContentPerInstance = async (
           newData[key] = p;
         }
       }
-      await knexClient.into("lessons_cl").insert(newData);
+      await knexLXP.into("lessons_cl").insert(newData);
 
       console.log("Creando Leccion : " + lesson.name + " en el curso " + name);
       if (questions.length > 0) {
@@ -197,7 +197,7 @@ export const migrateCoursesToContentPerInstance = async (
             }
           }
         });
-        await knexClient.into("lesson_questions_tb").insert(newQuestions);
+        await knexLXP.into("lesson_questions_tb").insert(newQuestions);
       }
     }
   }

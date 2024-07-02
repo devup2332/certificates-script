@@ -24,7 +24,7 @@ const groupByMethod = (array: any[], key: string) => {
 
 export const generateReportLpsPerInstance = async (instance: string) => {
   const dateStart = new Date("2020-01-01T00:00:00.000Z");
-  const dateEnd = new Date("2023-11-01T00:00:00.000Z");
+  const dateEnd = new Date("2024-05-31T00:00:00.000Z");
   const { lps } = await client.request(GET_USERS_LP_INFO, {
     clientId: instance,
     dateStart,

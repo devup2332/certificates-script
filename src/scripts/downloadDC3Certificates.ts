@@ -13,8 +13,8 @@ import { normalizeName } from "../utils/normalizeString";
 export const downloadDC3CertificatesForAnInstance = async (
   clientId: string,
 ) => {
-  const dateStart = new Date("2020-10-27T00:00:00.000Z");
-  const dateEnd = new Date("2023-11-27T00:00:00.000Z");
+  const dateStart = new Date("2023-03-01T00:00:00.000Z");
+  const dateEnd = new Date("2024-06-20T00:00:00.000Z");
   const { user_course_cl } = await client.request(
     GET_USER_COURSES_DC3_PER_INSTANCE,
     {
@@ -23,6 +23,7 @@ export const downloadDC3CertificatesForAnInstance = async (
       dateStart,
     },
   );
+
   const approvedUsers = user_course_cl.filter((c: any) => {
     let approved;
     if (c.course.min_score !== null && c.course.min_progress !== null) {
@@ -122,7 +123,7 @@ export const downloadDC3CertificatesForAnInstance = async (
     const fechaFinCurso = completed_at || last_update;
     const firstName = user?.first_name;
     const lastName = user?.last_name;
-
+    
     const requestData = {
       name: firstName,
       lastName: lastName,
@@ -138,11 +139,14 @@ export const downloadDC3CertificatesForAnInstance = async (
           : course?.dc3_data_json?.stps
           ? course?.dc3_data_json.stps
           : course.instructors_data[0].firstName,
+      instructorSignature: course?.instructor_signature_dc3,
       bossName: user?.business_name?.boss_name,
+      bossNameSignature: user?.business_name?.boss_name_signature,
       workersBossName: user?.business_name?.boss_name_workers,
+      workersBossNameSignature: user?.business_name?.boss_name_workers_signature,
       logo: user?.client_id,
       ocupacion: ocupacionName?.description ?? user?.user_ou?.name,
-      puesto: user.user_role.name,
+      puesto: user?.user_role?.name,
       nombreEmpresa: user.client?.name,
       courseName: normalizeName(course.name),
       duration: course.duration,
